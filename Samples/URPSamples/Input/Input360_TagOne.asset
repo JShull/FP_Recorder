@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8f8d9f46027ce4dd0afa122222e74d28, type: 3}
-  m_Name: Camera360_TagOne
+  m_Name: Input360_TagOne
   m_EditorClassIdentifier: 
   Source: 2
   ThreeSixtyCameraSettings:
-    source: 4
+    source: 2
     cameraTag: Cam_1
     flipFinalOutput: 0
     renderStereo: 0

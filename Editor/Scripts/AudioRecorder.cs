@@ -5,20 +5,20 @@ namespace FuzzPhyte.Recorder.Editor
 {
     [CreateAssetMenu(fileName = "Audio", menuName = "FuzzPhyte/Recorder/SettingsType/AudioType")]
     [Serializable]
-    public class AudioRecorder : FP_OutputFormatSO
+    public class AudioRecorder : FP_OutputFormatSO, IRecorderOutputFormat<AudioRecorderSettings>
     {
         [Space]
-        public AudioRecorderSettings AudioRecorderSettings;
+        //public AudioRecorderSettings AudioRecorderSettings;
         public FPAudioFormat Format;
-        public UnityEditor.Recorder.Input.AudioInput AudioInput;
-        public UnityEditor.Recorder.AudioRecorderSettings OtherAudioInput;
-        public RecorderInputSettings SomeSettings;
-        public UnityEditor.Recorder.Input.AudioInputSettings OtherAudioInputSettings;
+        
 
-        public void ReturnUnityOutputFormat()
+        public AudioRecorderSettings ReturnUnityOutputFormat(GameObject gObject=null)
         {
-            var audioFormatSettings = new UnityEditor.Recorder.Input.AudioInput();
+
             var otherFormatSettings = new UnityEditor.Recorder.AudioRecorderSettings();
+            //otherFormatSettings.RecordMode
+            //otherFormatSettings.fr
+            return otherFormatSettings;
             //otherFormatSettings.InputsSettings
         }
     }

@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a8fd2d7a8575a433fa89eccfa3a2bda4, type: 3}
-  m_Name: CameraGameView
+  m_Name: InputGameViewMatch
   m_EditorClassIdentifier: 
   Source: 0
   GameViewSettings:
     m_OutputResolution:
       m_CustomWidth: 1024
       m_CustomHeight: 1024
-      imageHeight: 1440
+      imageHeight: 0
       maxSupportedHeight: 4320
       m_AspectRatio:
         m_CustomAspectX: 1

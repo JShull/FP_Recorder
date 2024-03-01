@@ -13,6 +13,5 @@ MonoBehaviour:
   m_Name: Audio
   m_EditorClassIdentifier: 
   FPFormat: 3
-  AudioRecorderSettings: {fileID: 0}
-  AudioInputSettings:
-    preserveAudio: 1
+  EnabledRecorder: 1
+  Format: 0

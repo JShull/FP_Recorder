@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: 360OutputFile
   m_EditorClassIdentifier: 
   FileName: 
-  WildCardsV: 
+  WildCardsV: 080000000b000000
   OutputPath:
     m_Root: 1
     m_Leaf: 

@@ -8,5 +8,6 @@ namespace FuzzPhyte.Recorder.Editor
     public abstract class FP_OutputFormatSO : ScriptableObject
     {
         public FPRecorderType FPFormat;
+        public bool EnabledRecorder = true;
     }
 }
