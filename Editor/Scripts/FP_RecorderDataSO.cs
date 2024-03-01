@@ -26,6 +26,28 @@ namespace FuzzPhyte.Recorder.Editor
 
     }
     [Serializable]
+    public enum FPMediaFileFormat
+    {
+        PNG=0,
+        JPEG=1,
+        EXR=2
+    }
+    [Serializable]
+    public enum FPCompressionTypes
+    {
+        None=0,
+        RLE=1,
+        Zip=2,
+        PIZ=3,
+    }
+    [Serializable]
+    public enum FPAnimationCompression
+    {
+        Lossy=0,
+        Lossless=1,
+        Disabled=2
+    }
+    [Serializable]
     public enum FPWildCards
     {
         AOV = 0,

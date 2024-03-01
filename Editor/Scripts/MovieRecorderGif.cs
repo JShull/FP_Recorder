@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace FuzzPhyte.Recorder.Editor
 {
-    [CreateAssetMenu(fileName = "GifEncoder", menuName = "FuzzPhyte/Recorder/Type/Encoder/Gif")]
+    [CreateAssetMenu(fileName = "GifEncoder", menuName = "FuzzPhyte/Recorder/SettingsType/Encoder/Gif",order =3)]
     [Serializable]
     public class MovieRecorderGif : FP_OutputFormatSO
     {
