@@ -1,0 +1,18 @@
+{
+    "name": "com.fuzzphyte.recorder.samples",
+    "rootNamespace": "",
+    "references": [
+        "GUID:3183f71cf2b4345369a861201a035db6"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

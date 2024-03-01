@@ -1,0 +1,18 @@
+{
+    "name": "com.fuzzphyte.recorder",
+    "rootNamespace": "FuzzPhyte.Recorder",
+    "references": [
+        "GUID:832a8ef6e615e9a41a5076e1c9a43782",
+        "GUID:d87af21afaaf27f45b873a9ab462bcbb",
+        "GUID:b2274f1409ce26f40919f89f9d4f667c"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 983c9732cc20e40728f08b77da37cc99, type: 3}
+  m_Name: CameraTargetedCamera
+  m_EditorClassIdentifier: 
+  Source: 1
+  TargetedCameraSettings:
+    m_OutputResolution:
+      m_CustomWidth: 1024
+      m_CustomHeight: 1024
+      imageHeight: 0
+      maxSupportedHeight: 4320
+      m_AspectRatio:
+        m_CustomAspectX: 1
+        m_CustomAspectY: 1
+        m_ImageAspect: 1
+    source: 2
+    cameraTag: 
+    flipFinalOutput: 0
+    captureUI: 0
