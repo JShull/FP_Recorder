@@ -33,6 +33,11 @@ namespace FuzzPhyte.Recorder.Editor
         EXR=2
     }
     [Serializable]
+    public enum FPAudioFormat
+    {
+        WAV=0,
+    }
+    [Serializable]
     public enum FPCompressionTypes
     {
         None=0,

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace FuzzPhyte.Recorder.Editor
 {
-    [CreateAssetMenu(fileName = "ProResEncoder", menuName = "FuzzPhyte/Recorder/Type/Encoder/ProRes",order =2)]
+    [CreateAssetMenu(fileName = "ProResEncoder", menuName = "FuzzPhyte/Recorder/SettingsType/Encoder/ProRes",order =2)]
     [Serializable]
     public class MovieRecorderProRes : FP_OutputFormatSO
     {

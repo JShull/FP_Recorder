@@ -10,6 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 81b51b015b1894eee9bc6d3053243712, type: 3}
-  m_Name: AnimationClip
+  m_Name: AnimationClipExample
   m_EditorClassIdentifier: 
-  Recorder: 0
+  FPFormat: 0
+  RecordedHierarchy: 1
+  ClampedTangents: 1
+  AnimCompresion: 0
