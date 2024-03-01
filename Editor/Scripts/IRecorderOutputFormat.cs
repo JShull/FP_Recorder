@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace FuzzPhyte.Recorder.Editor
 {
-    public interface IRecorderOutputFormat<T>
+    public interface IRecorderOutputFormat<T,A>
     {
-        public T ReturnUnityOutputFormat(GameObject gameObject=null);
+        public T ReturnUnityOutputFormat(A inputParameters);
     }
 }

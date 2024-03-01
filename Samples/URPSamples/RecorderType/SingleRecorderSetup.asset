@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e10f830ff63824034bc4a25ccbb65148, type: 3}
-  m_Name: 360_Recorder
+  m_Name: SingleRecorderSetup
   m_EditorClassIdentifier: 
   CameraData:
     CameraFOV: 0
@@ -23,6 +23,7 @@ MonoBehaviour:
     SearchRadius: 0
     SearchResolution: 0
     StepsPerSegment: 0
-  RecorderType: {fileID: 11400000, guid: 0840322320bbc481ebb014dcf786d285, type: 2}
-  InputCameraData: {fileID: 11400000, guid: 79a7f4d516071418198a0d0db2cc8386, type: 2}
-  OutputCameraData: {fileID: 11400000, guid: 206ba02af4ba64c15b44876b5f2ff5c4, type: 2}
+  RecorderType: 0
+  InputFormatData: {fileID: 0}
+  OutputFormatData: {fileID: 0}
+  OutputCameraData: {fileID: 0}

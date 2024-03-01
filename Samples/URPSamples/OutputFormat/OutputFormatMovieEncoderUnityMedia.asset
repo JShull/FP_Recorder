@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa362861a07fc42e9b26743d6c3ed4da, type: 3}
+  m_Name: OutputFormatMovieEncoderUnityMedia
+  m_EditorClassIdentifier: 
+  FPFormat: 1
+  EnabledRecorder: 1
+  CoreEncoderSettings:
+    targetBitRate: 8
+    gopSize: 25
+    numConsecutiveBFrames: 2
+    encodingProfile: 2
+    keyframeDistance: 25
+    codec: 0
+    encodingQuality: 2
+  IncludeAudio: 0

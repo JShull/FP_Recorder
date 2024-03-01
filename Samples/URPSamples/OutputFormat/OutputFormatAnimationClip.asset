@@ -9,8 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c8eb71d654b134364af9a07da55edc53, type: 3}
-  m_Name: ImageSequence
+  m_Script: {fileID: 11500000, guid: 81b51b015b1894eee9bc6d3053243712, type: 3}
+  m_Name: OutputFormatAnimationClip
   m_EditorClassIdentifier: 
-  FPFormat: 2
-  ImageRecorderSettings: {fileID: 0}
+  FPFormat: 0
+  EnabledRecorder: 1
+  RecordedHierarchy: 1
+  ClampedTangents: 1
+  AnimCompresion: 0

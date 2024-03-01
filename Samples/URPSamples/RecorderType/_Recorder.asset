@@ -9,7 +9,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 81b51b015b1894eee9bc6d3053243712, type: 3}
-  m_Name: AnimationClip
+  m_Script: {fileID: 11500000, guid: a3c0055b093c5429aba90eff96899d06, type: 3}
+  m_Name: _Recorder
   m_EditorClassIdentifier: 
-  FPFormat: 0
+  RecordMode: 0
+  Playback: 0
+  GeneralRecorderSettings: {fileID: 0}
+  CapFPS: 1

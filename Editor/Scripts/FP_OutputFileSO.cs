@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace FuzzPhyte.Recorder.Editor
 {
-    [CreateAssetMenu(fileName = "CameraOutputData", menuName = "FuzzPhyte/Recorder/CamOutputData")]
+    [CreateAssetMenu(fileName = "CameraOutputData", menuName = "FuzzPhyte/Recorder/OutputFile/CamOutputData")]
     [Serializable]
     public class FP_OutputFileSO : ScriptableObject
     {
