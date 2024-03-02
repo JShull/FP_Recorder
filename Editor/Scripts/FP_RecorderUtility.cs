@@ -1,5 +1,7 @@
 using System;
 using FuzzPhyte.Utility;
+using UnityEditor;
+
 namespace FuzzPhyte.Recorder.Editor
 {
     [Serializable]
@@ -14,6 +16,7 @@ namespace FuzzPhyte.Recorder.Editor
         public const string CAT3 = "OutputFormat";
         public const string CAT4 = "OutputFile";
         public const string SAMPLESPATH = "Assets/" + PRODUCT_NAME + "/Samples/URPSamples";
+        
     }
 
     /*

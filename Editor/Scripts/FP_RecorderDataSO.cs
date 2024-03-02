@@ -22,9 +22,16 @@ namespace FuzzPhyte.Recorder.Editor
         public FP_OutputFormatSO OutputFormatData;
         public FP_OutputFileSO OutputCameraData;
 
-        public void SetupRecorderData()
+        public void Init(FPRecorderType recorderType)
         {
-            //RecorderDetails.mod
+            this.RecorderType = recorderType;    
+        }
+
+        public static FP_RecorderDataSO CreateInstance(FPRecorderType recType)
+        {
+            var data = ScriptableObject.CreateInstance<FP_RecorderDataSO>();
+            data.Init(recType);
+            return data;
         }
     }
 }
