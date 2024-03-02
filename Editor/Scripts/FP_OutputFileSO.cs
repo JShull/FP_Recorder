@@ -3,13 +3,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Recorder;
 using UnityEngine;
-
+using UnityEditor;
 namespace FuzzPhyte.Recorder.Editor
 {
-    [CreateAssetMenu(fileName = "CameraOutputData", menuName = "FuzzPhyte/Recorder/OutputFile/CamOutputData")]
+    //[MenuItem("")]
+    [CreateAssetMenu(fileName = "CameraOutputData", menuName = FuzzPhyte.Utility.FP_UtilityData.MENU_COMPANY+"/"+FP_RecorderUtility.PRODUCT_NAME+"/"+FP_RecorderUtility.CAT4+"/"+"/CamOutputData")]
     [Serializable]
     public class FP_OutputFileSO : ScriptableObject
     {
+        //public CreateAssetMenuAttribute MenuTest;
         //this would go on an actual editor script
         [HideInInspector]
         public string FileName;

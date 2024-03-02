@@ -1,7 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using FuzzPhyte.Utility;
 namespace FuzzPhyte.Recorder.Editor
 {
@@ -11,14 +8,21 @@ namespace FuzzPhyte.Recorder.Editor
         //public readonly static string MENU_COMPANY = "FuzzPhyte/";
         //public static string MENU_THINGS = + "Things/";
         //public static string MENU_WIDGETS = MENU + "Widgets/";
-        public const string PRODUCT_NAME = "Recorder";
-        public const string CAT1 = "UnityRecorder";
-        public const string CAT2 = "Input";
+        public const string PRODUCT_NAME = "FP_Recorder";
+        public const string CAT1 = "RecorderType";
+        public const string CAT2 = "InputFile";
         public const string CAT3 = "OutputFormat";
         public const string CAT4 = "OutputFile";
+        public const string SAMPLESPATH = "Assets/" + PRODUCT_NAME + "/Samples/URPSamples";
     }
 
-
+    /*
+     * https://forum.unity.com/threads/control-unity-recorder-from-script.840946/
+     * private RecorderWindow GetRecorderWindow()
+        {
+            return (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
+        }
+     **/
     [Serializable]
     public enum FPOutputResolution
     {
