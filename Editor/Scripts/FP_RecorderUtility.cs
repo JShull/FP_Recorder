@@ -1,22 +1,31 @@
 using System;
+using UnityEngine;
 using FuzzPhyte.Utility;
 using UnityEditor;
-
+using System.Collections;
+using FuzzPhyte.Utility.Editor;
 namespace FuzzPhyte.Recorder.Editor
 {
     [Serializable]
     public static class FP_RecorderUtility
     {
-        //public readonly static string MENU_COMPANY = "FuzzPhyte/";
-        //public static string MENU_THINGS = + "Things/";
-        //public static string MENU_WIDGETS = MENU + "Widgets/";
         public const string PRODUCT_NAME = "FP_Recorder";
         public const string CAT1 = "RecorderType";
         public const string CAT2 = "InputFile";
         public const string CAT3 = "OutputFormat";
         public const string CAT4 = "OutputFile";
         public const string SAMPLESPATH = "Assets/" + PRODUCT_NAME + "/Samples/URPSamples";
+        public const string CamTAG = "CameraTag_";
         
+        public static string ReturnProductName()
+        {
+            return PRODUCT_NAME;
+        }
+
+        public static  string ReturnSamplePath()
+        {
+            return SAMPLESPATH;
+        }
     }
 
     /*

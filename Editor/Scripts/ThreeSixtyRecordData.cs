@@ -15,5 +15,16 @@ namespace FuzzPhyte.Recorder.Editor
         {
             return ThreeSixtyCameraSettings;
         }
+        public void Init(Camera360InputSettings camSettings,GameObject gaObject=null)
+        {
+            this.ThreeSixtyCameraSettings = camSettings;
+        }
+
+        public static ThreeSixtyRecordData CreateInstance(Camera360InputSettings cameraSettings)
+        {
+            var data = ScriptableObject.CreateInstance<ThreeSixtyRecordData>();
+            data.Init(cameraSettings);
+            return data;
+        }
     }
 }
