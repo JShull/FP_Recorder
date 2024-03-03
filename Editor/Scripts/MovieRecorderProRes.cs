@@ -11,5 +11,18 @@ namespace FuzzPhyte.Recorder.Editor
         [Space]
         public UnityEditor.Recorder.Encoder.ProResEncoderSettings ProResEncoderSettings;
         public bool IncludeAudio;
+
+        public void Init(bool IncAudio, UnityEditor.Recorder.Encoder.ProResEncoderSettings encoderSettings)
+        {
+            this.IncludeAudio = IncAudio;
+            this.ProResEncoderSettings = encoderSettings;
+        }
+
+        public static MovieRecorderProRes CreateInstance(bool incAudio, UnityEditor.Recorder.Encoder.ProResEncoderSettings encSettings)
+        {
+            var data = ScriptableObject.CreateInstance<MovieRecorderProRes>();
+            data.Init(incAudio, encSettings);
+            return data;
+        }
     }
 }

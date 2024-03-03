@@ -13,6 +13,18 @@ namespace FuzzPhyte.Recorder.Editor
 
         [Space]
         public UnityEditor.Recorder.Encoder.GifEncoderSettings GifEncoderSettings;
+
+        public void Init(UnityEditor.Recorder.Encoder.GifEncoderSettings encoderSettings)
+        {
+            this.GifEncoderSettings = encoderSettings;
+        }
+
+        public static MovieRecorderGif CreateInstance(UnityEditor.Recorder.Encoder.GifEncoderSettings encSettings)
+        {
+            var data = ScriptableObject.CreateInstance<MovieRecorderGif>();
+            data.Init(encSettings);
+            return data;
+        }
     }
 
 }

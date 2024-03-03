@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using FuzzPhyte.Utility;
+using UnityEditor.Recorder.Input;
 using UnityEngine;
 
 namespace FuzzPhyte.Recorder.Editor
@@ -14,5 +15,18 @@ namespace FuzzPhyte.Recorder.Editor
         //mainUnityEncoder
         public UnityEditor.Recorder.Encoder.CoreEncoderSettings CoreEncoderSettings;
         public bool IncludeAudio;
+
+        public void Init(bool IncAudio, UnityEditor.Recorder.Encoder.CoreEncoderSettings encoderSettings)
+        {
+            this.IncludeAudio = IncAudio;
+            this.CoreEncoderSettings = encoderSettings;
+        }
+
+        public static MovieRecorderUnityMedia CreateInstance(bool incAudio, UnityEditor.Recorder.Encoder.CoreEncoderSettings encSettings)
+        {
+            var data = ScriptableObject.CreateInstance<MovieRecorderUnityMedia>();
+            data.Init(incAudio,encSettings);
+            return data;
+        }
     }
 }

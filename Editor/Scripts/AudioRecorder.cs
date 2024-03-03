@@ -24,5 +24,16 @@ namespace FuzzPhyte.Recorder.Editor
             return otherFormatSettings;
             //otherFormatSettings.InputsSettings
         }
+        public void Init()
+        {
+            this.Format = FPAudioFormat.WAV;
+        }
+
+        public static AudioRecorder CreateInstance()
+        {
+            var data = ScriptableObject.CreateInstance<AudioRecorder>();
+            data.Init();
+            return data;
+        }
     }
 }

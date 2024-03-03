@@ -1,4 +1,5 @@
 using System;
+using UnityEditor.Recorder.Input;
 using UnityEngine;
 
 namespace FuzzPhyte.Recorder.Editor
@@ -9,5 +10,7 @@ namespace FuzzPhyte.Recorder.Editor
     {
         
         public bool EnabledRecorder = true;
+        //public abstract void Init(bool recordedHierarchy, bool clampedTangents, AnimationInputSettings.CurveSimplificationOptions cCompression, GameObject gObject = null);
+
     }
 }
