@@ -12,32 +12,39 @@ namespace FuzzPhyte.Recorder.Editor
 {
     public class FPMenu : MonoBehaviour, IFPProductEditorUtility
     {
-        private const string SettingName = "RecorderSettings";
+        #region Editor Menu Configuration
+        private const string SettingName = "FP_RecorderSettings";
+        private const string CustomMenuBasePath = FP_UtilityData.MENU_COMPANY+"/"+FP_RecorderUtility.PRODUCT_NAME;
+        private const string OutputFormat = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT3;
+        private const string InputFile = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT2;
+        private const string RecorderType = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT1;
+        //Configuration
+        private const string DefaultConfigurationFileMenu = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT0;
+        private const string CGenericConfigMenu = DefaultConfigurationFileMenu + "/Default Config.";
+        private const string C360ConfigMenu = DefaultConfigurationFileMenu + "/360 Config.";
+        //Input Format
+        private const string CamThreeSixtyInput = InputFile + "/360Cam";
 
-        // Add a menu item named "Log Selected Transform Name" to MyMenu in the menu bar.
-        // We want this to be validated menu item: an item that is only enabled if specific conditions are met.
-        // To achieve this, we use a second function below to validate the menu item.
-        // so it will only be enabled if we have a transform selected.
-        [MenuItem("FuzzPhyte/Log Selected Transform Name")]
-        static void LogSelectedTransformName()
+        //Output Format
+        private const string MovieOutputMenu = OutputFormat + "/MovieEncoderUnity";
+        private const string MovieOutputProResMenu = OutputFormat + "/MovieEncoderProRes";
+        private const string MovieOutputGif = OutputFormat + "/MovieEncoderGif";
+        private const string ImageSeqOutput = OutputFormat + "/ImageSequence";
+        private const string AudioOutput = OutputFormat + "/Audio";
+        private const string AnimClipOutput = OutputFormat + "/AnimClip";
+        //Recorder Menus
+        private const string MovieRecorderMenu = RecorderType + "/Movie";
+        private const string AnimClipRecorderMenu = RecorderType + "/AnimClip";
+        private const string ImageSeqRecorderMenu = RecorderType + "/ImageSequence";
+        private const string AudioRecorderMenu = RecorderType + "/Audio";
+        
+        public static bool RecorderEnabled
         {
-            Debug.Log("Selected Transform is on " + Selection.activeTransform.gameObject.name + ".");
+            get { return EditorPrefs.GetBool(SettingName); }
+            set { EditorPrefs.SetBool(SettingName, value); }
         }
-
-        // Validate the menu item defined by the function above.
-        // The "Log Selected Transform Name" menu item is disabled if this function returns false.
-        // We tell the Editor that this is a validation function by decorating it with a MenuItem attribute
-        // and passing true as the second parameter.
-        // This invokes the MenuItem(string itemName, bool isValidateFunction) attribute constructor
-        // resulting in the function being treated as the validator for "Log Selected Transform Name" menu item.
-        [MenuItem("FuzzPhyte/Log Selected Transform Name", true)]
-        static bool ValidateLogSelectedTransformName()
-        {
-            // Return false if no transform is selected.
-            return Selection.activeTransform != null;
-        }
-
-        #region Tags
+        #endregion
+        #region Tags & Setup
         [MenuItem("FuzzPhyte/FP_Recorder/Setup/GenerateTenCameraTags",priority = FP_UtilityData.ORDER_SUBMENU_LVL5)]
         static protected void GenerateAllCameraTags()
         {
@@ -48,6 +55,8 @@ namespace FuzzPhyte.Recorder.Editor
             }
             RecorderEnabled = true;
             Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", true);
+            //Menu.SetChecked("FuzzPhyte/FP_Recorder/CreateRecorder", true);
+            //Menu.SetChecked("FuzzPhyte/FP_Recorder/CreateOutputFormat", true);
 
         }
 
@@ -61,68 +70,70 @@ namespace FuzzPhyte.Recorder.Editor
             }
             RecorderEnabled = false;
             Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", false);
+            //Menu.SetChecked("FuzzPhyte/FP_Recorder/CreateRecorder", false);
+            //Menu.SetChecked("FuzzPhyte/FP_Recorder/CreateOutputFormat", false);
 
         }
         [MenuItem("FuzzPhyte/FP_Recorder/Ready",priority=FP_UtilityData.ORDER_SUBMENU_LVL4)]
         static protected void SetupChecked()
         {
-            Debug.Log($"Cameras Setup? {RecorderEnabled}");
+            if (RecorderEnabled)
+            {
+                Debug.Log($"Camera Tags look good!");
+            }
+            else
+            {
+                Debug.Log($"You need to run the 'Setup' option in the FuzzPhyte Menu to generate the camera tags");
+            }
         }
-        public static bool RecorderEnabled
-        {
-            get { return EditorPrefs.GetBool(SettingName); }
-            set { EditorPrefs.SetBool(SettingName, value); }
-        }
-
-
         #endregion
 
         #region Recorder Generation
-        
-        [MenuItem("FuzzPhyte/FP_Recorder/CreateRecorder/Movie", priority = FP_UtilityData.ORDER_SUBMENU_LVL2)]
+
+        [MenuItem(MovieRecorderMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL2)]
         static protected void GenerateMovieRecorder()
         {
             // Define the folder path where the asset will be saved            
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
             GenerateRecorder(FPRecorderType.Movie, dataPath.Item2, "AMovieRecorder.asset");
         }
-        [MenuItem("FuzzPhyte/FP_Recorder/CreateRecorder/Movie", true)]
+        [MenuItem(MovieRecorderMenu, true)]
         static bool CreateRecorderMovieActive()
         {
             return RecorderEnabled;
         }
-        [MenuItem("FuzzPhyte/FP_Recorder/CreateRecorder/AnimClip", priority = FP_UtilityData.ORDER_SUBMENU_LVL2+1)]
+        [MenuItem(AnimClipRecorderMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL2+1)]
         static protected void GenerateAnimClipRecorder()
         {
             // Define the folder path where the asset will be saved            
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
             GenerateRecorder(FPRecorderType.AnimationClip, dataPath.Item2, "AAnimClipRecorder.asset");
         }
-        [MenuItem("FuzzPhyte/FP_Recorder/CreateRecorder/AnimClip",true)]
+        [MenuItem(AnimClipRecorderMenu, true)]
         static bool CreateRecorderAnimClipActive()
         {
             return RecorderEnabled;
         }
-        [MenuItem("FuzzPhyte/FP_Recorder/CreateRecorder/ImageSequence", priority = FP_UtilityData.ORDER_SUBMENU_LVL2 + 2)]
+        [MenuItem(ImageSeqRecorderMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL2 + 2)]
         static protected void GenerateImageSeqRecorder()
         {
             // Define the folder path where the asset will be saved            
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
             GenerateRecorder(FPRecorderType.ImageSequence, dataPath.Item2, "ImageSequenceRecorder.asset");
         }
-        [MenuItem("FuzzPhyte/FP_Recorder/CreateRecorder/ImageSequence",true)]
+        [MenuItem(ImageSeqRecorderMenu, true)]
         static bool CreateRecorderImageSeqActive()
         {
             return RecorderEnabled;
         }
-        [MenuItem("FuzzPhyte/FP_Recorder/CreateRecorder/Audio", priority = FP_UtilityData.ORDER_SUBMENU_LVL2 + 3)]
+        [MenuItem(AudioRecorderMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL2 + 3)]
         static protected void GenerateAudioRecorder()
         {
             // Define the folder path where the asset will be saved            
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
             GenerateRecorder(FPRecorderType.Audio, dataPath.Item2, "AudioRecorder.asset");
         }
-        [MenuItem("FuzzPhyte/FP_Recorder/CreateRecorder/Audio",true)]
+        [MenuItem(AudioRecorderMenu, true)]
         static protected bool CreateAudioRecorder()
         {
             return RecorderEnabled;
@@ -136,10 +147,11 @@ namespace FuzzPhyte.Recorder.Editor
             // Create the asset
             CreateAssetAt(asset, assetPath);
         }
+        
         #endregion
 
-        #region Recorders
-        [MenuItem("FuzzPhyte/FP_Recorder/CreateOutputFormat/AnimationClip", priority = FP_UtilityData.ORDER_SUBMENU_LVL1)]
+        #region Recorders OutputFormat
+        [MenuItem(AnimClipOutput, priority = FP_UtilityData.ORDER_SUBMENU_LVL2)]
         static protected void GenerateOutputAnimationClip()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
@@ -151,7 +163,12 @@ namespace FuzzPhyte.Recorder.Editor
             CreateAssetAt(asset, assetPath);
 
         }
-        [MenuItem("FuzzPhyte/FP_Recorder/CreateOutputFormat/MovieEncoderUnity", priority = FP_UtilityData.ORDER_SUBMENU_LVL1+1)]
+        [MenuItem(AnimClipOutput, true)]
+        static bool OutputAnimationClipActive()
+        {
+            return RecorderEnabled;
+        }
+        [MenuItem(MovieOutputMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL2+1)]
         static protected void GenerateOutputMovieEncoderUnity()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
@@ -162,7 +179,12 @@ namespace FuzzPhyte.Recorder.Editor
             var asset = MovieRecorderUnityMedia.CreateInstance(true, CoreEncoderSettings);
             CreateAssetAt(asset, assetPath);
         }
-        [MenuItem("FuzzPhyte/FP_Recorder/CreateOutputFormat/MovieEncoderProRes",priority = FP_UtilityData.ORDER_SUBMENU_LVL1+2)]
+        [MenuItem(MovieOutputMenu, true)]
+        static bool OutputMovieEncoderUnityActive()
+        {
+            return RecorderEnabled;
+        }
+        [MenuItem(MovieOutputProResMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL2+2)]
         static protected void GenerateOutputMovieEncoderProRes()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
@@ -175,7 +197,12 @@ namespace FuzzPhyte.Recorder.Editor
             
             CreateAssetAt(asset, assetPath);
         }
-        [MenuItem("FuzzPhyte/FP_Recorder/CreateOutputFormat/MovieEncoderGif",priority =FP_UtilityData.ORDER_SUBMENU_LVL1+3)]
+        [MenuItem(MovieOutputProResMenu, true)]
+        static bool OutputMovieEncoderProResActive()
+        {
+            return RecorderEnabled;
+        }
+        [MenuItem(MovieOutputGif, priority =FP_UtilityData.ORDER_SUBMENU_LVL2+3)]
         static protected void GenerateOutputMovieEncoderGif()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
@@ -187,7 +214,12 @@ namespace FuzzPhyte.Recorder.Editor
             CreateAssetAt(asset, assetPath);
 
         }
-        [MenuItem("FuzzPhyte/FP_Recorder/CreateOutputFormat/ImageSequence",priority = FP_UtilityData.ORDER_SUBMENU_LVL1+4)]
+        [MenuItem(MovieOutputGif, true)]
+        static bool OutputMovieEncoderGifActive()
+        {
+            return RecorderEnabled;
+        }
+        [MenuItem(ImageSeqOutput, priority = FP_UtilityData.ORDER_SUBMENU_LVL2+4)]
         static protected void GenerateOutputImageSequence()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
@@ -195,7 +227,12 @@ namespace FuzzPhyte.Recorder.Editor
             var asset = ImageSeqRecorder.CreateInstance(FPMediaFileFormat.PNG, FPCompressionTypes.Zip, 100);
             CreateAssetAt(asset, assetPath);
         }
-        [MenuItem("FuzzPhyte/FP_Recorder/CreateOutputFormat/Audio",priority = FP_UtilityData.ORDER_SUBMENU_LVL1+5)]
+        [MenuItem(ImageSeqOutput, true)]
+        static bool OutputMovieEncoderImageSequenceActive()
+        {
+            return RecorderEnabled;
+        }
+        [MenuItem(AudioOutput, priority = FP_UtilityData.ORDER_SUBMENU_LVL2+5)]
         static protected void GenerateOutputAudio()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
@@ -203,13 +240,15 @@ namespace FuzzPhyte.Recorder.Editor
             var asset = AudioRecorder.CreateInstance();
             CreateAssetAt(asset, assetPath);
         }
-        #endregion
-        static protected void GenerateOutput()
+        [MenuItem(AudioOutput, true)]
+        static bool OutputMovieAudioActive()
         {
-           
+            return RecorderEnabled;
         }
-        
-        [MenuItem("FuzzPhyte/FP_Recorder/InputFile/Cam360")]
+        #endregion
+
+        #region Recorder InputFormat
+        [MenuItem(CamThreeSixtyInput, priority = FP_UtilityData.ORDER_SUBMENU_LVL2)]
         static protected void GenerateInputFileCamThreeSixty()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT2);
@@ -217,6 +256,11 @@ namespace FuzzPhyte.Recorder.Editor
 
             var asset = GenerateCamThreeSixty();
             CreateAssetAt(asset, assetPath);
+        }
+        [MenuItem(CamThreeSixtyInput, true)]
+        static bool InputFileCamThreeSixty()
+        {
+            return RecorderEnabled;
         }
         static protected ThreeSixtyRecordData GenerateCamThreeSixty()
         {
@@ -229,8 +273,8 @@ namespace FuzzPhyte.Recorder.Editor
             camSettings.MapSize = 2048;
             return ThreeSixtyRecordData.CreateInstance(camSettings);
         }
-
-        [MenuItem("FuzzPhyte/FP_Recorder/CreateDefaultConfiguration",priority = FP_UtilityData.ORDER_SUBMENU_LVL3+1)]
+        #endregion
+        [MenuItem(CGenericConfigMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL3+1)]
         static protected void GenerateRecorderConfiguration()
         {
             // Define the folder path where the asset will be saved
@@ -257,7 +301,7 @@ namespace FuzzPhyte.Recorder.Editor
             Debug.Log("ExampleAsset created at " + assetPath);
         }
 
-        [MenuItem("FuzzPhyte/FP_Recorder/Create360Configuration", priority = FP_UtilityData.ORDER_SUBMENU_LVL3)]
+        [MenuItem(C360ConfigMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL3)]
         static protected void Generate360Configuration()
         {
             // Define the folder path where the asset will be saved

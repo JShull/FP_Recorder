@@ -10,6 +10,7 @@ namespace FuzzPhyte.Recorder.Editor
     public static class FP_RecorderUtility
     {
         public const string PRODUCT_NAME = "FP_Recorder";
+        public const string CAT0 = "Configuration";
         public const string CAT1 = "RecorderType";
         public const string CAT2 = "InputFile";
         public const string CAT3 = "OutputFormat";
