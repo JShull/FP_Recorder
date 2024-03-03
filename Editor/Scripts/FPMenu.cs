@@ -13,6 +13,30 @@ namespace FuzzPhyte.Recorder.Editor
     public class FPMenu : MonoBehaviour, IFPProductEditorUtility
     {
         private const string SettingName = "RecorderSettings";
+
+        // Add a menu item named "Log Selected Transform Name" to MyMenu in the menu bar.
+        // We want this to be validated menu item: an item that is only enabled if specific conditions are met.
+        // To achieve this, we use a second function below to validate the menu item.
+        // so it will only be enabled if we have a transform selected.
+        [MenuItem("FuzzPhyte/Log Selected Transform Name")]
+        static void LogSelectedTransformName()
+        {
+            Debug.Log("Selected Transform is on " + Selection.activeTransform.gameObject.name + ".");
+        }
+
+        // Validate the menu item defined by the function above.
+        // The "Log Selected Transform Name" menu item is disabled if this function returns false.
+        // We tell the Editor that this is a validation function by decorating it with a MenuItem attribute
+        // and passing true as the second parameter.
+        // This invokes the MenuItem(string itemName, bool isValidateFunction) attribute constructor
+        // resulting in the function being treated as the validator for "Log Selected Transform Name" menu item.
+        [MenuItem("FuzzPhyte/Log Selected Transform Name", true)]
+        static bool ValidateLogSelectedTransformName()
+        {
+            // Return false if no transform is selected.
+            return Selection.activeTransform != null;
+        }
+
         #region Tags
         [MenuItem("FuzzPhyte/FP_Recorder/Setup/GenerateTenCameraTags",priority = FP_UtilityData.ORDER_SUBMENU_LVL5)]
         static protected void GenerateAllCameraTags()
@@ -22,9 +46,11 @@ namespace FuzzPhyte.Recorder.Editor
                 var camTag = FP_RecorderUtility.CamTAG + i.ToString();
                 FPGenerateTag.CreateTag(camTag);
             }
-            IsEnabled = true;
-            Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", IsEnabled);
+            RecorderEnabled = true;
+            Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", true);
+
         }
+
         [MenuItem("FuzzPhyte/FP_Recorder/Setup/RemoveTenCameraTags",priority =FP_UtilityData.ORDER_SUBMENU_LVL5+1)]
         static protected void RemoveAllTenCameraTags()
         {
@@ -33,28 +59,37 @@ namespace FuzzPhyte.Recorder.Editor
                 var camTag = FP_RecorderUtility.CamTAG + i.ToString();
                 FPGenerateTag.RemoveTag(camTag);
             }
-            IsEnabled = false;
-            Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", IsEnabled);
+            RecorderEnabled = false;
+            Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", false);
+
         }
         [MenuItem("FuzzPhyte/FP_Recorder/Ready",priority=FP_UtilityData.ORDER_SUBMENU_LVL4)]
         static protected void SetupChecked()
         {
-            Debug.Log($"Cameras Setup? {IsEnabled}");
+            Debug.Log($"Cameras Setup? {RecorderEnabled}");
         }
-        public static bool IsEnabled
+        public static bool RecorderEnabled
         {
-            get { return EditorPrefs.GetBool(SettingName, true); }
+            get { return EditorPrefs.GetBool(SettingName); }
             set { EditorPrefs.SetBool(SettingName, value); }
         }
-        
+
+
         #endregion
+
         #region Recorder Generation
+        
         [MenuItem("FuzzPhyte/FP_Recorder/CreateRecorder/Movie", priority = FP_UtilityData.ORDER_SUBMENU_LVL2)]
         static protected void GenerateMovieRecorder()
         {
             // Define the folder path where the asset will be saved            
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
             GenerateRecorder(FPRecorderType.Movie, dataPath.Item2, "AMovieRecorder.asset");
+        }
+        [MenuItem("FuzzPhyte/FP_Recorder/CreateRecorder/Movie", true)]
+        static bool CreateRecorderMovieActive()
+        {
+            return RecorderEnabled;
         }
         [MenuItem("FuzzPhyte/FP_Recorder/CreateRecorder/AnimClip", priority = FP_UtilityData.ORDER_SUBMENU_LVL2+1)]
         static protected void GenerateAnimClipRecorder()
@@ -63,6 +98,11 @@ namespace FuzzPhyte.Recorder.Editor
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
             GenerateRecorder(FPRecorderType.AnimationClip, dataPath.Item2, "AAnimClipRecorder.asset");
         }
+        [MenuItem("FuzzPhyte/FP_Recorder/CreateRecorder/AnimClip",true)]
+        static bool CreateRecorderAnimClipActive()
+        {
+            return RecorderEnabled;
+        }
         [MenuItem("FuzzPhyte/FP_Recorder/CreateRecorder/ImageSequence", priority = FP_UtilityData.ORDER_SUBMENU_LVL2 + 2)]
         static protected void GenerateImageSeqRecorder()
         {
@@ -70,12 +110,22 @@ namespace FuzzPhyte.Recorder.Editor
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
             GenerateRecorder(FPRecorderType.ImageSequence, dataPath.Item2, "ImageSequenceRecorder.asset");
         }
+        [MenuItem("FuzzPhyte/FP_Recorder/CreateRecorder/ImageSequence",true)]
+        static bool CreateRecorderImageSeqActive()
+        {
+            return RecorderEnabled;
+        }
         [MenuItem("FuzzPhyte/FP_Recorder/CreateRecorder/Audio", priority = FP_UtilityData.ORDER_SUBMENU_LVL2 + 3)]
         static protected void GenerateAudioRecorder()
         {
             // Define the folder path where the asset will be saved            
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
             GenerateRecorder(FPRecorderType.Audio, dataPath.Item2, "AudioRecorder.asset");
+        }
+        [MenuItem("FuzzPhyte/FP_Recorder/CreateRecorder/Audio",true)]
+        static protected bool CreateAudioRecorder()
+        {
+            return RecorderEnabled;
         }
         static protected void GenerateRecorder(FPRecorderType theType, string fulllocalPath, string assetName)
         {
@@ -87,6 +137,7 @@ namespace FuzzPhyte.Recorder.Editor
             CreateAssetAt(asset, assetPath);
         }
         #endregion
+
         #region Recorders
         [MenuItem("FuzzPhyte/FP_Recorder/CreateOutputFormat/AnimationClip", priority = FP_UtilityData.ORDER_SUBMENU_LVL1)]
         static protected void GenerateOutputAnimationClip()
@@ -157,24 +208,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
            
         }
-        /// <summary>
-        /// Create Asset at path
-        /// </summary>
-        /// <param name="asset"></param>
-        /// <param name="assetPath"></param>
-        static protected void CreateAssetAt(Object asset, string assetPath)
-        {
-            // Create the asset
-            AssetDatabase.CreateAsset(asset, assetPath);
-            AssetDatabase.SaveAssets();
-
-            // Focus the asset in the Unity Editor
-            EditorUtility.FocusProjectWindow();
-            Selection.activeObject = asset;
-
-            // Optionally, log the creation
-            Debug.Log("ExampleAsset created at " + assetPath);
-        }
+        
         [MenuItem("FuzzPhyte/FP_Recorder/InputFile/Cam360")]
         static protected void GenerateInputFileCamThreeSixty()
         {
@@ -251,7 +285,25 @@ namespace FuzzPhyte.Recorder.Editor
             // Optionally, log the creation
             Debug.Log("ExampleAsset created at " + assetPath);
         }
+        /// <summary>
+        /// Create Asset at path
+        /// </summary>
+        /// <param name="asset"></param>
+        /// <param name="assetPath"></param>
+        static protected void CreateAssetAt(Object asset, string assetPath)
+        {
+            // Create the asset
+            AssetDatabase.CreateAsset(asset, assetPath);
+            AssetDatabase.SaveAssets();
 
+            // Focus the asset in the Unity Editor
+            EditorUtility.FocusProjectWindow();
+            Selection.activeObject = asset;
+            // Register the creation in the undo system
+            Undo.RegisterCreatedObjectUndo(asset, "Create " + asset.name);
+            // Optionally, log the creation
+            Debug.Log("ExampleAsset created at " + assetPath);
+        }
         public string ReturnProductName()
         {
             return FP_RecorderUtility.PRODUCT_NAME;
