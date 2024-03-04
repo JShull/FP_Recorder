@@ -7,6 +7,7 @@ using FuzzPhyte.Utility;
 using FuzzPhyte.Utility.Editor;
 using UnityEngine.WSA;
 using UnityEditor.VersionControl;
+using static UnityEngine.Experimental.Rendering.RayTracingAccelerationStructure;
 
 namespace FuzzPhyte.Recorder.Editor
 {
@@ -344,6 +345,19 @@ namespace FuzzPhyte.Recorder.Editor
             return ThreeSixtyRecordData.CreateInstance(camSettings);
         }
         #endregion
+        [MenuItem("FuzzPhyte/FP_Recorder/Create Output File/<Recorder><Take> File",priority =FP_UtilityData.ORDER_SUBMENU_LVL2)]
+        static protected void GenerateOutputFileRecorderTake()
+        {
+            var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT4);
+            var assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/OutputFileRecordTake.asset");
+            List<FPWildCards> _cards = new List<FPWildCards>
+            {
+                FPWildCards.RECORDER,
+                FPWildCards.TAKE
+            };
+            var asset = FP_OutputFileSO.CreateInstance(_cards, UnityEditor.Recorder.OutputPath.Root.AssetsFolder);
+            CreateAssetAt(asset, assetPath);
+        }
         [MenuItem(CGenericConfigMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL3+1)]
         static protected void GenerateRecorderConfiguration()
         {
@@ -385,16 +399,42 @@ namespace FuzzPhyte.Recorder.Editor
             }
 
             // The asset to be created
-            var asset = ScriptableObject.CreateInstance<FP_RecorderSO>();
-            string assetPath = AssetDatabase.GenerateUniqueAssetPath(folderPath + "/ARecorderConfiguration.asset");
+            var recorderAsset = ScriptableObject.CreateInstance<FP_RecorderDataSO>();
+            string assetPath = AssetDatabase.GenerateUniqueAssetPath(folderPath + "/A360Configuration.asset");
+            recorderAsset.RecorderType = FPRecorderType.ImageSequence;
+            //Create all of the other files we need for 360
+            //ThreeSixtyRecordData:FP_InputDataSO
+            var inputAsset = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT2);
+            string inputAssetPath = AssetDatabase.GenerateUniqueAssetPath(inputAsset.Item2 + "/InputFileCam360.asset");
+            //outputPath File
+            var outputFile = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT4);
+            var outputFileAssetPath = AssetDatabase.GenerateUniqueAssetPath(outputFile.Item2 + "/OutputFileRecordTake.asset");
+            List<FPWildCards> _cards = new List<FPWildCards>
+            {
+                FPWildCards.RECORDER,
+                FPWildCards.TAKE
+            };
+            var outputFileAsset = FP_OutputFileSO.CreateInstance(_cards, UnityEditor.Recorder.OutputPath.Root.AssetsFolder);
+            CreateAssetAt(outputFileAsset, outputFileAssetPath);
+            recorderAsset.OutputCameraData = outputFileAsset;
+            //
+            var inputCamAsset  = GenerateCamThreeSixty();
+            CreateAssetAt(inputCamAsset, inputAssetPath);
+            recorderAsset.InputFormatData = inputCamAsset;
+            //FP_OutputFileSO
+            //FP_OutputFormatSO - would be ImageSeqRecorder for generic 360
+            var outputAsset = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+            string imgSeqOutputAssetPath = AssetDatabase.GenerateUniqueAssetPath(outputAsset.Item2 + "/OutputFormatImgSequence.asset");
 
-            // Create the asset
-            AssetDatabase.CreateAsset(asset, assetPath);
-            AssetDatabase.SaveAssets();
+            var imgSeqAsset = ImageSeqRecorder.CreateInstance(FPMediaFileFormat.PNG, FPCompressionTypes.Zip, 100);
+            CreateAssetAt(imgSeqAsset, imgSeqOutputAssetPath);
+            recorderAsset.OutputFormatData = imgSeqAsset;
 
+            //Create the Configuration Asset after the other 3 are done
+            CreateAssetAt(recorderAsset, assetPath);
             // Focus the asset in the Unity Editor
             EditorUtility.FocusProjectWindow();
-            Selection.activeObject = asset;
+            Selection.activeObject = recorderAsset;
 
             // Optionally, log the creation
             Debug.Log("ExampleAsset created at " + assetPath);

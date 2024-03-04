@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using UnityEditor.Recorder;
 using UnityEngine;
 using UnityEditor;
+using Microsoft.SqlServer.Server;
+
 namespace FuzzPhyte.Recorder.Editor
 {
     //[MenuItem("")]
@@ -34,6 +36,34 @@ namespace FuzzPhyte.Recorder.Editor
                     FileName += "_" + wCard;
                 }
             }
+            OutputPath.Equals(OutputPath.Root.AssetsFolder);
         }
+        public void Init(List<FPWildCards>wCards, OutputPath.Root anOutput)
+        {
+            this.WildCardsV = new List<FPWildCards>();
+            this.OutputPath = new OutputPath
+            {
+                
+            };
+           
+            for(int i = 0; i < wCards.Count; i++)
+            {
+                this.WildCardsV.Add(wCards[i]);
+            }
+            //now actually build it
+            BuildWildCardFileName();
+
+        }
+
+        public static FP_OutputFileSO CreateInstance(List<FPWildCards> wildCards, OutputPath.Root anOutputPath)
+        {
+            var data = ScriptableObject.CreateInstance<FP_OutputFileSO>();
+            data.Init(wildCards,anOutputPath);
+            return data;
+
+        }
+
+
+
     }
 }

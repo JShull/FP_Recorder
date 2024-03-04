@@ -3,7 +3,7 @@ using System;
 using FuzzPhyte.Utility;
 namespace FuzzPhyte.Recorder.Editor
 {
-    //+ FP_RecorderUtility.PRODUCT_NAME + "/" + FP_RecorderUtility.CAT1+
+    
     [CreateAssetMenuAttribute(menuName = FP_UtilityData.MENU_COMPANY + "/ARecorder",order =10)]
     //[UnityEditor.MenuItem("ScriptableObjects/Category/Special/MyObject")]
     [Serializable]
@@ -33,5 +33,10 @@ namespace FuzzPhyte.Recorder.Editor
             data.Init(recType);
             return data;
         }
+        public void RemoveReferencesAndDelete()
+        {
+
+        }
+
     }
 }
