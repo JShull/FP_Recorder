@@ -15,6 +15,7 @@ namespace FuzzPhyte.Recorder.Editor
         public const string CAT2 = "InputFile";
         public const string CAT3 = "OutputFormat";
         public const string CAT4 = "OutputFile";
+        public const string CAT5 = "AddedRecorder";
         public const string SAMPLESPATH = "Assets/" + PRODUCT_NAME + "/Samples/URPSamples";
         public const string CamTAG = "FPCameraTag_";
         
@@ -104,6 +105,14 @@ namespace FuzzPhyte.Recorder.Editor
         Movie = 1,
         ImageSequence = 2,
         Audio = 3
+    }
+    [Serializable]
+    public enum FPEncoderType
+    {
+        ImageEncoder=0,
+        UnityEncoder=1,
+        ProResEncoder=2,
+        GifEncoder=3
     }
     [Serializable]
     //https://docs.unity3d.com/Packages/com.unity.recorder@4.0/manual/OutputFileProperties.html#available-placeholders

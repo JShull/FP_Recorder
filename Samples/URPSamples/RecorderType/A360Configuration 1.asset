@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e10f830ff63824034bc4a25ccbb65148, type: 3}
-  m_Name: AMovieRecorder
+  m_Name: A360Configuration 1
   m_EditorClassIdentifier: 
   CameraData:
     CameraFOV: 0
@@ -23,7 +23,10 @@ MonoBehaviour:
     SearchRadius: 0
     SearchResolution: 0
     StepsPerSegment: 0
-  RecorderType: 1
-  InputFormatData: {fileID: 0}
-  OutputFormatData: {fileID: 0}
-  OutputCameraData: {fileID: 0}
+  RecorderName: FP_Generated_ImgSeq
+  RecorderType: 2
+  InputFormatData: {fileID: 11400000, guid: 29bbecc949d3d413ea42cab18dd040f2, type: 2}
+  OutputFormatData: {fileID: 11400000, guid: 756f3a26806e44a419c178eb3cb3f517, type: 2}
+  OutputCameraData: {fileID: 11400000, guid: aca2e5210286d43ff9ea284104b938f8, type: 2}
+  NumberOfCameras: 1
+  AnimationClipGameObject: {fileID: 0}

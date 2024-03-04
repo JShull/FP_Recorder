@@ -5,6 +5,7 @@ using UnityEditor.Recorder;
 using UnityEngine;
 using UnityEditor;
 using Microsoft.SqlServer.Server;
+using System.IO;
 
 namespace FuzzPhyte.Recorder.Editor
 {
@@ -36,7 +37,9 @@ namespace FuzzPhyte.Recorder.Editor
                     FileName += "_" + wCard;
                 }
             }
-            OutputPath.Equals(OutputPath.Root.AssetsFolder);
+            var mediaOutputFolder = Path.Combine(Application.dataPath,"Recordings/"+FileName);
+            FileName = mediaOutputFolder;
+            //OutputPath.Equals(OutputPath.Root.AssetsFolder);
         }
         public void Init(List<FPWildCards>wCards, OutputPath.Root anOutput)
         {

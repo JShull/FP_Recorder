@@ -9,15 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a3c0055b093c5429aba90eff96899d06, type: 3}
-  m_Name: ARecorderConfiguration
+  m_Script: {fileID: 11500000, guid: c8eb71d654b134364af9a07da55edc53, type: 3}
+  m_Name: OutputFormatImgSequence 1
   m_EditorClassIdentifier: 
-  Playback: 0
-  RecordMode: 1
-  MyPreset: {fileID: 0}
-  TargetFrame: 0
-  StartIntervalFrame: 0
-  EndIntervalFrame: 0
-  StartTimeInterval: 0
-  EndTimeIntervarl: 0
-  CapFPS: 1
+  EnabledRecorder: 1
+  EncoderType: 0
+  MediaFileFormat: 0
+  Compression: 2
+  Quality: 100

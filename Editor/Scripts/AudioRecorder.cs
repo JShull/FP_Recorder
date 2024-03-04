@@ -8,7 +8,7 @@ namespace FuzzPhyte.Recorder.Editor
 
     [CreateAssetMenu(fileName = "OutputFormatAudio", menuName = FP_UtilityData.MENU_COMPANY+ "/"+FP_RecorderUtility.PRODUCT_NAME+ "/"+FP_RecorderUtility.CAT3+"/Audio")]
     [Serializable]
-    public class AudioRecorder : FP_OutputFormatSO, IRecorderOutputFormat<AudioRecorderSettings,GameObject>
+    public class AudioRecorder : FP_InputDataSO, IRecorderOutputFormat<AudioRecorderSettings,GameObject>
     {
         [Space]
         //public AudioRecorderSettings AudioRecorderSettings;

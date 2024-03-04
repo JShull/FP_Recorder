@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e10f830ff63824034bc4a25ccbb65148, type: 3}
+  m_Name: A360Configuration
+  m_EditorClassIdentifier: 
+  CameraData:
+    CameraFOV: 0
+    PitchDamping: 0
+    RollDamping: 0
+    XDamping: 0
+    YDamping: 0
+    ZDamping: 0
+    PositionOffset: 0
+    SearchRadius: 0
+    SearchResolution: 0
+    StepsPerSegment: 0
+  RecorderName: FP_Generated_ImgSeqTest
+  RecorderType: 2
+  InputFormatData: {fileID: 11400000, guid: 7a829b09d35f24eb9ac6d8d86a8921b6, type: 2}
+  OutputFormatData: {fileID: 11400000, guid: 38ac06dc1cfbb460baecb013db7f2957, type: 2}
+  OutputCameraData: {fileID: 11400000, guid: c2fd85c4a6d9e40b0bc377411ef766bc, type: 2}
+  NumberOfCameras: 1
+  AnimationClipGameObject: {fileID: 0}

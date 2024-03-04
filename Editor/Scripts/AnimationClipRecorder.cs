@@ -7,7 +7,7 @@ namespace FuzzPhyte.Recorder.Editor
 {
     [CreateAssetMenu(fileName = "OutputFormatAnimationClip", menuName = FP_UtilityData.MENU_COMPANY + "/" + FP_RecorderUtility.PRODUCT_NAME + "/" + FP_RecorderUtility.CAT3 + "/AnimationClip")]
     [Serializable]
-    public class AnimationClipRecorder : FP_OutputFormatSO, IRecorderOutputFormat<AnimationRecorderSettings,GameObject>
+    public class AnimationClipRecorder : FP_InputDataSO, IRecorderOutputFormat<AnimationRecorderSettings,GameObject>
     {
         //note: will need the gameobject to be given to us on the editor script side
         //doesn't make sense to add that here

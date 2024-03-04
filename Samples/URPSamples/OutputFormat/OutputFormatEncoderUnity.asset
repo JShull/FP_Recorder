@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fa362861a07fc42e9b26743d6c3ed4da, type: 3}
-  m_Name: OutputFormatMovieEncoderUnityMedia
+  m_Name: OutputFormatEncoderUnity
   m_EditorClassIdentifier: 
   EnabledRecorder: 1
   EncoderType: 1
@@ -22,4 +22,4 @@ MonoBehaviour:
     keyframeDistance: 25
     codec: 0
     encodingQuality: 2
-  IncludeAudio: 0
+  IncludeAudio: 1

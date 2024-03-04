@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 23d810d0cb5c14b36abff00ea03bf148, type: 3}
   m_Name: OutputFormatMovieEncoderGif
   m_EditorClassIdentifier: 
-  FPFormat: 1
   EnabledRecorder: 1
+  EncoderType: 3
   GifEncoderSettings:
     loop: 1
     quality: 90

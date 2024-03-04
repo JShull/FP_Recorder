@@ -8,11 +8,14 @@ using FuzzPhyte.Utility.Editor;
 using UnityEngine.WSA;
 using UnityEditor.VersionControl;
 using static UnityEngine.Experimental.Rendering.RayTracingAccelerationStructure;
+using UnityEditor.Recorder;
+using NUnit.Framework;
 
 namespace FuzzPhyte.Recorder.Editor
 {
     public class FPMenu : MonoBehaviour, IFPProductEditorUtility
     {
+        private static RecorderControllerSettings settings;// = new RecorderControllerSettings();
         #region Editor Menu Configuration
         private const string SettingName = "FP_RecorderSettings";
         private const string NumberCamTags = "FP_CamTagsCount";
@@ -26,12 +29,18 @@ namespace FuzzPhyte.Recorder.Editor
         private const string OutputFormat = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT3;
         private const string InputFile = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT2;
         private const string RecorderType = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT1;
+        private const string OutputFile = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT4;
         //Configuration
         private const string DefaultConfigurationFileMenu = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT0;
         private const string CGenericConfigMenu = DefaultConfigurationFileMenu + "/Default Config.";
         private const string C360ConfigMenu = DefaultConfigurationFileMenu + "/360 Config.";
+        //Add Recorder
+        private const string AddRecorderFileMenu = CustomMenuBasePath + "/Create & Place " + FP_RecorderUtility.CAT5;
+        private const string AddAnySingleRecorderToRecorderSettings = AddRecorderFileMenu + "/Add Selected Recorder";
+        private const string CreateAndAdd360RecorderToRecorderSettings = AddRecorderFileMenu + "/Create & Add: 360";
         //Input Format
         private const string CamThreeSixtyInput = InputFile + "/360Cam";
+        private const string RecordTakeOutputFile = OutputFile + "/<Recorder><Take> File";
 
         //Output Format
         private const string MovieOutputMenu = OutputFormat + "/MovieEncoderUnity";
@@ -111,9 +120,40 @@ namespace FuzzPhyte.Recorder.Editor
             NumberCameraTags += numberTags;
 
             RecorderEnabled = true;
+
+            var someWindow = (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
+            
+            if (settings==null)
+            {
+                settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
+                settings.ExitPlayMode = true;
+                settings.CapFrameRate = true;
+                settings.FrameRate = 30;
+                settings.FrameRatePlayback = FrameRatePlayback.Constant;
+                var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+
+                //var asset = AnimationClipRecorder.CreateInstance(true, true, AnimationInputSettings.CurveSimplificationOptions.Lossless);
+                string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/RecorderControllerSettings.asset");
+
+                //create the asset
+                CreateAssetAt(settings, assetPath);
+
+            }
+            else
+            {
+
+            }
+            
             Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", true);
             EditorUtility.DisplayDialog($"Added {numberTags} Camera Tags", $"'{FP_RecorderUtility.CamTAG}' with an '0,1,2,...' have been adedd! You now have {NumberCameraTags} FP_Record camera tags in the Project.", "OK");
 
+        }
+        protected void GenerateSettingsUpdates(RecorderControllerSettings settingsPassed=null)
+        {
+            if (settingsPassed != null)
+            {
+                settings = settingsPassed;
+            }
         }
         [MenuItem(SetupRemoveFiveCameras,priority =FP_UtilityData.ORDER_SUBMENU_LVL5+3)]
         static protected void RemoveFiveCameraTags()
@@ -166,7 +206,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             // Define the folder path where the asset will be saved            
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
-            GenerateRecorder(FPRecorderType.Movie, dataPath.Item2, "AMovieRecorder.asset");
+            GenerateRecorder(FPRecorderType.Movie, dataPath.Item2, "AMovieRecorder.asset", "FP_Movie");
         }
         [MenuItem(MovieRecorderMenu, true)]
         static bool CreateRecorderMovieActive()
@@ -178,7 +218,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             // Define the folder path where the asset will be saved            
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
-            GenerateRecorder(FPRecorderType.AnimationClip, dataPath.Item2, "AAnimClipRecorder.asset");
+            GenerateRecorder(FPRecorderType.AnimationClip, dataPath.Item2, "AAnimClipRecorder.asset","FP_AnimClip");
         }
         [MenuItem(AnimClipRecorderMenu, true)]
         static bool CreateRecorderAnimClipActive()
@@ -190,7 +230,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             // Define the folder path where the asset will be saved            
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
-            GenerateRecorder(FPRecorderType.ImageSequence, dataPath.Item2, "ImageSequenceRecorder.asset");
+            GenerateRecorder(FPRecorderType.ImageSequence, dataPath.Item2, "ImageSequenceRecorder.asset","FP_ImgSequence");
         }
         [MenuItem(ImageSeqRecorderMenu, true)]
         static bool CreateRecorderImageSeqActive()
@@ -202,17 +242,17 @@ namespace FuzzPhyte.Recorder.Editor
         {
             // Define the folder path where the asset will be saved            
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
-            GenerateRecorder(FPRecorderType.Audio, dataPath.Item2, "AudioRecorder.asset");
+            GenerateRecorder(FPRecorderType.Audio, dataPath.Item2, "AudioRecorder.asset","FP_Audio");
         }
         [MenuItem(AudioRecorderMenu, true)]
         static protected bool CreateAudioRecorder()
         {
             return RecorderEnabled;
         }
-        static protected void GenerateRecorder(FPRecorderType theType, string fulllocalPath, string assetName)
+        static protected void GenerateRecorder(FPRecorderType theType, string fulllocalPath, string assetName, string recorderName)
         {
             // The asset to be created
-            var asset = FP_RecorderDataSO.CreateInstance(theType);
+            var asset = FP_RecorderDataSO.CreateInstance(theType,recorderName);
             
             string assetPath = AssetDatabase.GenerateUniqueAssetPath(fulllocalPath + "/"+assetName);
             // Create the asset
@@ -295,7 +335,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
             string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/OutputFormatImgSequence.asset");
-            var asset = ImageSeqRecorder.CreateInstance(FPMediaFileFormat.PNG, FPCompressionTypes.Zip, 100);
+            var asset = ImageSeqRecorder.CreateInstance( ImageRecorderSettings.ImageRecorderOutputFormat.PNG , ImageRecorderSettings.EXRCompressionType.Zip, 100);
             CreateAssetAt(asset, assetPath);
         }
         [MenuItem(ImageSeqOutput, true)]
@@ -336,6 +376,7 @@ namespace FuzzPhyte.Recorder.Editor
         static protected ThreeSixtyRecordData GenerateCamThreeSixty()
         {
             var camSettings = new Camera360InputSettings();
+
             camSettings.CameraTag = FP_RecorderUtility.CamTAG + 0.ToString();
             camSettings.Source = UnityEditor.Recorder.ImageSource.TaggedCamera;
             camSettings.OutputWidth = 4096;
@@ -345,7 +386,7 @@ namespace FuzzPhyte.Recorder.Editor
             return ThreeSixtyRecordData.CreateInstance(camSettings);
         }
         #endregion
-        [MenuItem("FuzzPhyte/FP_Recorder/Create Output File/<Recorder><Take> File",priority =FP_UtilityData.ORDER_SUBMENU_LVL2)]
+        [MenuItem(RecordTakeOutputFile, priority =FP_UtilityData.ORDER_SUBMENU_LVL2)]
         static protected void GenerateOutputFileRecorderTake()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT4);
@@ -402,6 +443,7 @@ namespace FuzzPhyte.Recorder.Editor
             var recorderAsset = ScriptableObject.CreateInstance<FP_RecorderDataSO>();
             string assetPath = AssetDatabase.GenerateUniqueAssetPath(folderPath + "/A360Configuration.asset");
             recorderAsset.RecorderType = FPRecorderType.ImageSequence;
+            recorderAsset.RecorderName = "FP_Generated_ImgSeq";
             //Create all of the other files we need for 360
             //ThreeSixtyRecordData:FP_InputDataSO
             var inputAsset = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT2);
@@ -426,7 +468,7 @@ namespace FuzzPhyte.Recorder.Editor
             var outputAsset = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
             string imgSeqOutputAssetPath = AssetDatabase.GenerateUniqueAssetPath(outputAsset.Item2 + "/OutputFormatImgSequence.asset");
 
-            var imgSeqAsset = ImageSeqRecorder.CreateInstance(FPMediaFileFormat.PNG, FPCompressionTypes.Zip, 100);
+            var imgSeqAsset = ImageSeqRecorder.CreateInstance( ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageRecorderSettings.EXRCompressionType.Zip, 100);
             CreateAssetAt(imgSeqAsset, imgSeqOutputAssetPath);
             recorderAsset.OutputFormatData = imgSeqAsset;
 
@@ -438,6 +480,200 @@ namespace FuzzPhyte.Recorder.Editor
 
             // Optionally, log the creation
             Debug.Log("ExampleAsset created at " + assetPath);
+        }
+        [MenuItem(CreateAndAdd360RecorderToRecorderSettings,priority = FP_UtilityData.ORDER_SUBMENU_LVL3)]
+        static protected void CreateAndAdd360Recorder()
+        {
+            Generate360Configuration();
+            AddARecorderToUnityRecorder();
+        }
+        /// <summary>
+        /// Core Function to add a Selected Recorder to the Recorder Editor Tool via Unity
+        /// </summary>
+        [MenuItem(AddAnySingleRecorderToRecorderSettings, priority = FP_UtilityData.ORDER_SUBMENU_LVL3+1)]
+        static protected void AddARecorderToUnityRecorder()
+        {
+            var data = Selection.activeObject as FP_RecorderDataSO;
+            if (data != null)
+            {
+                //use this selected asset
+                // Create recorder settings based on data.RecorderType, etc.
+                //get current settings
+
+
+                //get the current recordcontrollersettings
+                
+                //var localSettings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
+                //var currentController = UnityEditor.Recorder.RecorderEditor
+                settings.ExitPlayMode = true;
+                settings.CapFrameRate = true;
+                settings.FrameRate = 30;
+                settings.FrameRatePlayback = FrameRatePlayback.Constant;
+
+
+                //figure out what recorder to add based on the FP_RecorderDataSO
+                var blankImageRecorder = ScriptableObject.CreateInstance<ImageRecorderSettings>();
+                var movieImageRecorder = ScriptableObject.CreateInstance<MovieRecorderSettings>();
+                var blankAudioRecorder = ScriptableObject.CreateInstance<AudioRecorderSettings>();
+                var blankAnimClipRecorder = ScriptableObject.CreateInstance<AnimationRecorderSettings>();
+                //Input Settings first
+                if(data.RecorderType == FPRecorderType.ImageSequence || data.RecorderType == FPRecorderType.Movie)
+                {
+                    blankImageRecorder.imageInputSettings = MovieImageSequenceInputTarget(data);
+                    movieImageRecorder.ImageInputSettings = MovieImageSequenceInputTarget(data);
+                    blankImageRecorder.OutputFile = data.OutputCameraData.FileName;
+                    movieImageRecorder.OutputFile = data.OutputCameraData.FileName;
+                    blankImageRecorder.name = data.RecorderName;
+                    movieImageRecorder.name = data.RecorderName;
+                }
+                else
+                {
+                    if (data.RecorderType == FPRecorderType.Audio)
+                    {
+                        var castAudio = data.InputFormatData as AudioRecorder;
+                        blankAudioRecorder = castAudio.ReturnUnityOutputFormat();
+                        blankAudioRecorder.OutputFile = data.OutputCameraData.FileName;
+                        blankAudioRecorder.name = data.RecorderName;
+                    }
+                    else
+                    {
+                        if (data.RecorderType == FPRecorderType.AnimationClip)
+                        {
+                            var castClip = data.InputFormatData as AnimationClipRecorder;
+                            blankAnimClipRecorder = castClip.ReturnUnityOutputFormat(data.AnimationClipGameObject);
+                            blankAnimClipRecorder.OutputFile = data.OutputCameraData.FileName;
+                            blankAnimClipRecorder.name = data.RecorderName;
+                        }
+                    }
+                }
+                
+                //output format now
+                switch (data.RecorderType)
+                {
+                    case FPRecorderType.AnimationClip:
+                        settings.AddRecorderSettings(blankAnimClipRecorder);
+                        
+                        //RemoveScriptableObjectMemoryGenerated(movieImageRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(blankImageRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(blankAudioRecorder);
+                        break;
+                    case FPRecorderType.Movie:
+                        switch (data.OutputFormatData.EncoderType)
+                        {
+                            case FPEncoderType.UnityEncoder:
+                                var unityEncoder = data.OutputFormatData as MovieRecorderUnityMedia;
+                                movieImageRecorder.EncoderSettings = unityEncoder.CoreEncoderSettings;
+                                break;
+                            case FPEncoderType.ProResEncoder:
+                                var proResEncoder = data.OutputFormatData as MovieRecorderProRes;
+                                movieImageRecorder.EncoderSettings = proResEncoder.ProResEncoderSettings;
+                                break;
+                            case FPEncoderType.GifEncoder:
+                                var gifEncoder = data.OutputFormatData as MovieRecorderGif;
+                                movieImageRecorder.EncoderSettings = gifEncoder.GifEncoderSettings;
+                                break;
+                        }
+                        settings.AddRecorderSettings(movieImageRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(blankAnimClipRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(blankImageRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(blankAudioRecorder);
+                        break;
+                    case FPRecorderType.ImageSequence:
+                        var img = data.OutputFormatData as ImageSeqRecorder;
+                        blankImageRecorder.OutputFormat = img.MediaFileFormat;
+                        blankImageRecorder.EXRCompression = img.Compression;
+                        blankImageRecorder.JpegQuality = img.Quality;
+                        settings.AddRecorderSettings(blankImageRecorder);
+                        ///RemoveScriptableObjectMemoryGenerated(movieImageRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(blankAnimClipRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(blankAudioRecorder);
+                        break;
+                    case FPRecorderType.Audio:
+                        settings.AddRecorderSettings(blankAudioRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(blankAnimClipRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(blankImageRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(movieImageRecorder);
+                        break;
+                }
+
+                // Instantiate and configure the recorder controller
+                //var controller = new RecorderController(settings);
+                //RecorderOptions.VerboseMode = true;
+
+                //controller.PrepareRecording();
+                //return (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
+                //update and save settings
+                //settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
+                //settings.ExitPlayMode = true;
+                //settings.CapFrameRate = true;
+                //settings.FrameRate = 30;
+                //settings.FrameRatePlayback = FrameRatePlayback.Constant;
+                //var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+                //var fullpath = dataPath.Item2 + "/RecorderControllerSettings.asset";
+
+                //var loadedAsset = AssetDatabase.LoadAssetAtPath<RecorderControllerSettings>(fullpath);
+                //string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/RecorderControllerSettingsV.asset");
+
+                //update the asset by deleting it and then resaving it
+                //AssetDatabase.DeleteAsset(fullpath);
+                //CreateAssetAt(settings, assetPath);
+                var someWindow = (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
+                //someWindow.
+                someWindow.SetRecorderControllerSettings(settings);
+                //EditorUtility.SetDirty(controller.Settings);
+                //AssetDatabase.SaveAssetIfDirty(controller.Settings);
+            }
+            else
+            {
+                Debug.LogError($"You need to select an 'FP_RecorderDataSO' type, not a {Selection.activeObject.ToString()}");
+            }
+        }
+        /// <summary>
+        /// Clean up items we might have created on the editor side
+        /// </summary>
+        /// <param name="myScriptableObject"></param>
+        /// <returns></returns>
+        private static bool RemoveScriptableObjectMemoryGenerated(Object myScriptableObject)
+        {
+            string assetPath = AssetDatabase.GetAssetPath(myScriptableObject);
+            bool result = AssetDatabase.DeleteAsset(assetPath);
+
+            if (result)
+            {
+                Debug.Log("Asset deleted successfully.");
+            }
+            else
+            {
+                Debug.Log("Asset deletion failed.");
+            }
+            return result;
+        }
+        private static ImageInputSettings MovieImageSequenceInputTarget(FP_RecorderDataSO data)
+        {
+            switch (data.InputFormatData.Source)
+            {
+                case FPInputSettings.GameView:
+                    var dataInputGameViewCast = data.InputFormatData as GameViewCamRecordData;
+                    return dataInputGameViewCast.GameViewSettings;
+                    
+                case FPInputSettings.TargetedCamera:
+                    var dataInputTargetCast = data.InputFormatData as TargetedCamRecordData;
+                    return dataInputTargetCast.TargetedCameraSettings;
+                    
+                case FPInputSettings.a360View:
+                    var dataInput360Cast = data.InputFormatData as ThreeSixtyRecordData;
+                    return dataInput360Cast.ThreeSixtyCameraSettings;
+                    
+                case FPInputSettings.RenderTextureAsset:
+                    var dataInputTextureCast = data.InputFormatData as FPRenderTextureRecordData;
+                    return dataInputTextureCast.RenderTextureCameraSettings;
+                    
+                case FPInputSettings.TextureSampling:
+                    var dataInputTextureSamplingCast = data.InputFormatData as FPTextureSamplingRecordData;
+                    return dataInputTextureSamplingCast.RenderTextureSamplingSettings;
+                default:
+                    return null;
+            }
         }
         /// <summary>
         /// Create Asset at path
@@ -468,5 +704,5 @@ namespace FuzzPhyte.Recorder.Editor
             return FP_RecorderUtility.SAMPLESPATH;
         }
     }
-    
+
 }

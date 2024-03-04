@@ -16,6 +16,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             this.IncludeAudio = IncAudio;
             this.ProResEncoderSettings = encoderSettings;
+            this.EncoderType = FPEncoderType.ProResEncoder;
         }
 
         public static MovieRecorderProRes CreateInstance(bool incAudio, UnityEditor.Recorder.Encoder.ProResEncoderSettings encSettings)

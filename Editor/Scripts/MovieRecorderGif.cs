@@ -17,6 +17,7 @@ namespace FuzzPhyte.Recorder.Editor
         public void Init(UnityEditor.Recorder.Encoder.GifEncoderSettings encoderSettings)
         {
             this.GifEncoderSettings = encoderSettings;
+            this.EncoderType = FPEncoderType.GifEncoder;
         }
 
         public static MovieRecorderGif CreateInstance(UnityEditor.Recorder.Encoder.GifEncoderSettings encSettings)

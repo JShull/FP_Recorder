@@ -18,6 +18,7 @@ namespace FuzzPhyte.Recorder.Editor
         public void Init(Camera360InputSettings camSettings,GameObject gaObject=null)
         {
             this.ThreeSixtyCameraSettings = camSettings;
+            this.Source = FPInputSettings.a360View;
         }
 
         public static ThreeSixtyRecordData CreateInstance(Camera360InputSettings cameraSettings)

@@ -10,6 +10,7 @@ namespace FuzzPhyte.Recorder.Editor
     {
         
         public bool EnabledRecorder = true;
+        public FPEncoderType EncoderType;
         //public abstract void Init(bool recordedHierarchy, bool clampedTangents, AnimationInputSettings.CurveSimplificationOptions cCompression, GameObject gObject = null);
 
     }
