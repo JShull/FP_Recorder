@@ -19,6 +19,9 @@ namespace FuzzPhyte.Recorder.Editor
         #region Editor Menu Configuration
         private const string SettingName = "FP_RecorderSettings";
         private const string NumberCamTags = "FP_CamTagsCount";
+        private const string JSONEditorName = "FP_RecorderSettingsJSON";
+        private const string HaveSettingsFileName = "FP_HaveSettings";
+        //
         private const string CustomMenuBasePath = FP_UtilityData.MENU_COMPANY+"/"+FP_RecorderUtility.PRODUCT_NAME;
         private const string SetupMenuBase = FP_UtilityData.MENU_COMPANY + "/" + FP_RecorderUtility.PRODUCT_NAME + "/Setup";
         private const string SetupAddTenCameras = SetupMenuBase + "/Generate Ten CameraTags";
@@ -65,9 +68,19 @@ namespace FuzzPhyte.Recorder.Editor
             get { return EditorPrefs.GetInt(NumberCamTags); }
             set { EditorPrefs.SetInt(NumberCamTags, value); }
         }
+        public static string TheRecorderSettingsJSON
+        {
+            get { return EditorPrefs.GetString(JSONEditorName); }
+            set { EditorPrefs.SetString(JSONEditorName, value); }
+        }
+        public static bool HaveRecorderSettings
+        {
+            get { return EditorPrefs.GetBool(HaveSettingsFileName); }
+            set { EditorPrefs.SetBool(HaveSettingsFileName, value); }
+        }
         #endregion
         #region Tags & Setup
-        
+
         [MenuItem(SetupAddTenCameras,priority = FP_UtilityData.ORDER_SUBMENU_LVL5)]
         static protected void AddTenCameraTags()
         {
@@ -104,6 +117,31 @@ namespace FuzzPhyte.Recorder.Editor
             EditorUtility.DisplayDialog("Removed All Camera Tags",$"{_matchingTags.Count} Tags have been removed. Now there are {NumberCameraTags} FP_Record camera tags in scene" , "OK");
  
         }
+        //runs once when the editor is loaded and we check to see if it already exists in JSON
+        //called from another script
+        public static void SetupSettingsFileOnBoot()
+        {
+            if (HaveRecorderSettings)
+            {
+                Debug.Log($"String message that should be maybe JSON BEGINS HERE| {TheRecorderSettingsJSON}");
+                settings = JsonUtility.FromJson<RecorderControllerSettings>(TheRecorderSettingsJSON);
+                //we have something in the editorprefs, but we need to load it from the JSON
+                Debug.LogWarning($"Found that we might have some settings in the EditorPrefs, but we need to load them from the JSON");
+            }
+            else
+            {
+                Debug.LogWarning($"no Settings file in the editorPrefs");
+                settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
+                settings.ExitPlayMode = true;
+                settings.CapFrameRate = true;
+                settings.FrameRate = 30;
+                settings.FrameRatePlayback = FrameRatePlayback.Constant;
+                //save the settings as json and store them to my editerprefs
+                TheRecorderSettingsJSON = JsonUtility.ToJson(settings);
+                HaveRecorderSettings = true;
+            }
+            
+        }
         /// <summary>
         /// Adds 'x' number of camera tags
         /// </summary>
@@ -123,38 +161,12 @@ namespace FuzzPhyte.Recorder.Editor
 
             var someWindow = (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
             
-            if (settings==null)
-            {
-                settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
-                settings.ExitPlayMode = true;
-                settings.CapFrameRate = true;
-                settings.FrameRate = 30;
-                settings.FrameRatePlayback = FrameRatePlayback.Constant;
-                var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
-
-                //var asset = AnimationClipRecorder.CreateInstance(true, true, AnimationInputSettings.CurveSimplificationOptions.Lossless);
-                string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/RecorderControllerSettings.asset");
-
-                //create the asset
-                CreateAssetAt(settings, assetPath);
-
-            }
-            else
-            {
-
-            }
             
             Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", true);
             EditorUtility.DisplayDialog($"Added {numberTags} Camera Tags", $"'{FP_RecorderUtility.CamTAG}' with an '0,1,2,...' have been adedd! You now have {NumberCameraTags} FP_Record camera tags in the Project.", "OK");
 
         }
-        protected void GenerateSettingsUpdates(RecorderControllerSettings settingsPassed=null)
-        {
-            if (settingsPassed != null)
-            {
-                settings = settingsPassed;
-            }
-        }
+        
         [MenuItem(SetupRemoveFiveCameras,priority =FP_UtilityData.ORDER_SUBMENU_LVL5+3)]
         static protected void RemoveFiveCameraTags()
         {
@@ -494,6 +506,22 @@ namespace FuzzPhyte.Recorder.Editor
         static protected void AddARecorderToUnityRecorder()
         {
             var data = Selection.activeObject as FP_RecorderDataSO;
+            if (settings == null)
+            {
+                //repopulate from a saved file?
+                if (HaveRecorderSettings)
+                {
+                    //load the settings from the json
+                    settings = JsonUtility.FromJson<RecorderControllerSettings>(TheRecorderSettingsJSON);
+                    Debug.LogWarning($"Found that we might have some settings in the EditorPrefs, but we need to load them from the JSON");
+
+                }
+                else
+                {
+                    Debug.LogWarning($"Got here and didn't have a recorder settings file");
+                    settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
+                }
+            }
             if (data != null)
             {
                 //use this selected asset
@@ -596,30 +624,12 @@ namespace FuzzPhyte.Recorder.Editor
                         break;
                 }
 
-                // Instantiate and configure the recorder controller
-                //var controller = new RecorderController(settings);
-                //RecorderOptions.VerboseMode = true;
-
-                //controller.PrepareRecording();
-                //return (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
-                //update and save settings
-                //settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
-                //settings.ExitPlayMode = true;
-                //settings.CapFrameRate = true;
-                //settings.FrameRate = 30;
-                //settings.FrameRatePlayback = FrameRatePlayback.Constant;
-                //var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
-                //var fullpath = dataPath.Item2 + "/RecorderControllerSettings.asset";
-
-                //var loadedAsset = AssetDatabase.LoadAssetAtPath<RecorderControllerSettings>(fullpath);
-                //string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/RecorderControllerSettingsV.asset");
-
-                //update the asset by deleting it and then resaving it
-                //AssetDatabase.DeleteAsset(fullpath);
-                //CreateAssetAt(settings, assetPath);
                 var someWindow = (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
                 //someWindow.
                 someWindow.SetRecorderControllerSettings(settings);
+                //update the settings file
+                TheRecorderSettingsJSON = JsonUtility.ToJson(settings);
+                HaveRecorderSettings = true;
                 //EditorUtility.SetDirty(controller.Settings);
                 //AssetDatabase.SaveAssetIfDirty(controller.Settings);
             }
