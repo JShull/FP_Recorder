@@ -110,7 +110,8 @@ namespace FuzzPhyte.Recorder.Editor
         TargetedCamera = 1,
         a360View = 2,
         RenderTextureAsset = 3,
-        TextureSampling = 4
+        TextureSampling = 4,
+        NoInputSettings=9,
     }
     [Serializable]
     public enum FPRecorderType
@@ -126,7 +127,8 @@ namespace FuzzPhyte.Recorder.Editor
         ImageEncoder=0,
         UnityEncoder=1,
         ProResEncoder=2,
-        GifEncoder=3
+        GifEncoder=3,
+        NoEncoder=9,
     }
     [Serializable]
     //https://docs.unity3d.com/Packages/com.unity.recorder@4.0/manual/OutputFileProperties.html#available-placeholders
