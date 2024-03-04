@@ -14,7 +14,14 @@ namespace FuzzPhyte.Recorder.Editor
     {
         #region Editor Menu Configuration
         private const string SettingName = "FP_RecorderSettings";
+        private const string NumberCamTags = "FP_CamTagsCount";
         private const string CustomMenuBasePath = FP_UtilityData.MENU_COMPANY+"/"+FP_RecorderUtility.PRODUCT_NAME;
+        private const string SetupMenuBase = FP_UtilityData.MENU_COMPANY + "/" + FP_RecorderUtility.PRODUCT_NAME + "/Setup";
+        private const string SetupAddTenCameras = SetupMenuBase + "/Generate Ten CameraTags";
+        private const string SetupAddFiveCameras = SetupMenuBase + "/Generate Five CameraTags";
+        private const string SetupRemoveTenCameras = SetupMenuBase + "/Remove Ten CameraTags";
+        private const string SetupRemoveFiveCameras = SetupMenuBase + "/Remove Five CameraTags";
+        private const string RemoveAllFPCameras = SetupMenuBase + "/Reset All FPCameraTags";
         private const string OutputFormat = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT3;
         private const string InputFile = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT2;
         private const string RecorderType = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT1;
@@ -43,35 +50,98 @@ namespace FuzzPhyte.Recorder.Editor
             get { return EditorPrefs.GetBool(SettingName); }
             set { EditorPrefs.SetBool(SettingName, value); }
         }
+        public static int NumberCameraTags
+        {
+            get { return EditorPrefs.GetInt(NumberCamTags); }
+            set { EditorPrefs.SetInt(NumberCamTags, value); }
+        }
         #endregion
         #region Tags & Setup
-        [MenuItem("FuzzPhyte/FP_Recorder/Setup/GenerateTenCameraTags",priority = FP_UtilityData.ORDER_SUBMENU_LVL5)]
-        static protected void GenerateAllCameraTags()
+        
+        [MenuItem(SetupAddTenCameras,priority = FP_UtilityData.ORDER_SUBMENU_LVL5)]
+        static protected void AddTenCameraTags()
         {
-            for(int i = 0; i < 10; i++)
+            AddNumberTags(10);
+        }
+        [MenuItem(SetupAddFiveCameras, priority = FP_UtilityData.ORDER_SUBMENU_LVL5+1)]
+        static protected void AddFiveCameraTags()
+        {
+            AddNumberTags(5);
+        }
+        [MenuItem(RemoveAllFPCameras, priority =FP_UtilityData.ORDER_SUBMENU_LVL4+5)]
+        static protected void RemoveAllCameraTagsMatchingPattern()
+        {
+            var tags = UnityEditorInternal.InternalEditorUtility.tags;
+            //string matchedTags = "Matched Tags:\n";
+            List<string> _matchingTags = new List<string>();
+
+            for(int i = 0; i < tags.Length; i++)
+            {
+                var tag = tags[i];
+                if (tag.Contains(FP_RecorderUtility.CamTAG))
+                {
+                    _matchingTags.Add(tag);
+                    Debug.Log($"Found a potential match: {tag}");
+                }
+            }
+            for(int l = 0; l < _matchingTags.Count; l++)
+            {
+                FPGenerateTag.RemoveTag(_matchingTags[l]);
+            }
+            RecorderEnabled = false;
+            NumberCameraTags = 0;
+            Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", false);
+            EditorUtility.DisplayDialog("Removed All Camera Tags",$"{_matchingTags.Count} Tags have been removed. Now there are {NumberCameraTags} FP_Record camera tags in scene" , "OK");
+ 
+        }
+        /// <summary>
+        /// Adds 'x' number of camera tags
+        /// </summary>
+        /// <param name="numberTags"></param>
+        static protected void AddNumberTags(int numberTags)
+        {
+            var startingCamNum = NumberCameraTags;
+            var endCamValue = NumberCameraTags + numberTags;
+            for (int i = startingCamNum; i < endCamValue; i++)
             {
                 var camTag = FP_RecorderUtility.CamTAG + i.ToString();
                 FPGenerateTag.CreateTag(camTag);
             }
+            NumberCameraTags += numberTags;
+
             RecorderEnabled = true;
             Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", true);
-            //Menu.SetChecked("FuzzPhyte/FP_Recorder/CreateRecorder", true);
-            //Menu.SetChecked("FuzzPhyte/FP_Recorder/CreateOutputFormat", true);
+            EditorUtility.DisplayDialog($"Added {numberTags} Camera Tags", $"'{FP_RecorderUtility.CamTAG}' with an '0,1,2,...' have been adedd! You now have {NumberCameraTags} FP_Record camera tags in the Project.", "OK");
 
         }
-
-        [MenuItem("FuzzPhyte/FP_Recorder/Setup/RemoveTenCameraTags",priority =FP_UtilityData.ORDER_SUBMENU_LVL5+1)]
-        static protected void RemoveAllTenCameraTags()
+        [MenuItem(SetupRemoveFiveCameras,priority =FP_UtilityData.ORDER_SUBMENU_LVL5+3)]
+        static protected void RemoveFiveCameraTags()
         {
-            for(int i = 0; i < 10; i++)
+            RemoveNumberTags(5);
+        }
+        [MenuItem(SetupRemoveTenCameras,priority =FP_UtilityData.ORDER_SUBMENU_LVL5+2)]
+        static protected void RemoveTenCameraTags()
+        {
+            RemoveNumberTags(10);
+        }
+        static protected void RemoveNumberTags(int numberTags)
+        {
+            var currentCamTags = NumberCameraTags;
+            var endCamTags = NumberCameraTags - numberTags;
+            for (int i = currentCamTags - 1; i >= endCamTags; i--)
             {
                 var camTag = FP_RecorderUtility.CamTAG + i.ToString();
                 FPGenerateTag.RemoveTag(camTag);
             }
-            RecorderEnabled = false;
-            Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", false);
-            //Menu.SetChecked("FuzzPhyte/FP_Recorder/CreateRecorder", false);
-            //Menu.SetChecked("FuzzPhyte/FP_Recorder/CreateOutputFormat", false);
+            NumberCameraTags -= numberTags;
+            if (NumberCameraTags <= 0)
+            {
+                NumberCameraTags = 0;
+                RecorderEnabled = false;
+                Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", false);
+            }
+
+            EditorUtility.DisplayDialog($"Removed {numberTags} Camera Tags", $"'{FP_RecorderUtility.CamTAG}' with an '0,1,2,...' have been Removed! You now have {NumberCameraTags} FP_Record camera tags in the Project.", "OK");
 
         }
         [MenuItem("FuzzPhyte/FP_Recorder/Ready",priority=FP_UtilityData.ORDER_SUBMENU_LVL4)]
