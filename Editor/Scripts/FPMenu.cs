@@ -10,12 +10,14 @@ using UnityEditor.VersionControl;
 using static UnityEngine.Experimental.Rendering.RayTracingAccelerationStructure;
 using UnityEditor.Recorder;
 using NUnit.Framework;
+//using System;
 
 namespace FuzzPhyte.Recorder.Editor
 {
     public class FPMenu : MonoBehaviour, IFPProductEditorUtility
     {
         private static RecorderControllerSettings settings;// = new RecorderControllerSettings();
+        private static FPRecorderSettingsJSON settingsData;
         #region Editor Menu Configuration
         private const string SettingName = "FP_RecorderSettings";
         private const string NumberCamTags = "FP_CamTagsCount";
@@ -28,7 +30,11 @@ namespace FuzzPhyte.Recorder.Editor
         private const string SetupAddFiveCameras = SetupMenuBase + "/Generate Five CameraTags";
         private const string SetupRemoveTenCameras = SetupMenuBase + "/Remove Ten CameraTags";
         private const string SetupRemoveFiveCameras = SetupMenuBase + "/Remove Five CameraTags";
+        //
+        private const string LoadRecorderFromData = SetupMenuBase + "/Load from Data";
         private const string RemoveAllFPCameras = SetupMenuBase + "/Reset All FPCameraTags";
+        private const string ResetAllEditorData = SetupMenuBase + "/Reset All Editor DATA";
+        //
         private const string OutputFormat = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT3;
         private const string InputFile = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT2;
         private const string RecorderType = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT1;
@@ -117,31 +123,7 @@ namespace FuzzPhyte.Recorder.Editor
             EditorUtility.DisplayDialog("Removed All Camera Tags",$"{_matchingTags.Count} Tags have been removed. Now there are {NumberCameraTags} FP_Record camera tags in scene" , "OK");
  
         }
-        //runs once when the editor is loaded and we check to see if it already exists in JSON
-        //called from another script
-        public static void SetupSettingsFileOnBoot()
-        {
-            if (HaveRecorderSettings)
-            {
-                Debug.Log($"String message that should be maybe JSON BEGINS HERE| {TheRecorderSettingsJSON}");
-                settings = JsonUtility.FromJson<RecorderControllerSettings>(TheRecorderSettingsJSON);
-                //we have something in the editorprefs, but we need to load it from the JSON
-                Debug.LogWarning($"Found that we might have some settings in the EditorPrefs, but we need to load them from the JSON");
-            }
-            else
-            {
-                Debug.LogWarning($"no Settings file in the editorPrefs");
-                settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
-                settings.ExitPlayMode = true;
-                settings.CapFrameRate = true;
-                settings.FrameRate = 30;
-                settings.FrameRatePlayback = FrameRatePlayback.Constant;
-                //save the settings as json and store them to my editerprefs
-                TheRecorderSettingsJSON = JsonUtility.ToJson(settings);
-                HaveRecorderSettings = true;
-            }
-            
-        }
+        
         /// <summary>
         /// Adds 'x' number of camera tags
         /// </summary>
@@ -398,6 +380,184 @@ namespace FuzzPhyte.Recorder.Editor
             return ThreeSixtyRecordData.CreateInstance(camSettings);
         }
         #endregion
+        #region New Data Menu Items
+        //runs once when the editor is loaded and we check to see if it already exists in JSON
+        //called from another script
+        public static void SetupSettingsFileOnBoot()
+        {
+            if (HaveRecorderSettings)
+            {
+                Debug.Log($"String message that should be maybe JSON BEGINS HERE| {TheRecorderSettingsJSON}");
+                //need to bring the file into my data
+                settingsData = JsonUtility.FromJson<FPRecorderSettingsJSON>(TheRecorderSettingsJSON);
+                Debug.LogWarning($"Found that we might have some settings in the EditorPrefs, but we need to load them from the JSON");
+                string returnMessages = "";
+                Debug.LogWarning($"Settings Data Notes Before: {settingsData.RecorderNotes}");
+                bool anyErrors = false;
+                try
+                {
+                    
+                    var settingsDataReturn = settingsData.GenerateRecorderControllerSettingsForUnity(out returnMessages);
+                    Debug.LogWarning($"Messages Returned:{returnMessages}");
+                    if (settingsDataReturn.Item2)
+                    {
+                        settings = settingsDataReturn.Item1;
+                        //try to load it into the editor
+                        Debug.LogWarning($"File appears loaded correctly. Going to try and populate the recoder!");
+                        
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Our Settings File contained not enough information, need to manually build it and/or look into something...");
+                        settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
+                        settings.ExitPlayMode = settingsData.ExitPlayMode;
+                        settings.CapFrameRate = settingsData.CapFPS;
+                        settings.FrameRate = settingsData.FrameRate;
+                        settings.FrameRatePlayback = settingsData.Playback;
+                        
+                        if (settingsDataReturn.Item1 != null)
+                        {
+                            settings = settingsDataReturn.Item1;
+                            Debug.LogWarning($"Rebuilt the file: assigned settings to the data we passed back, going to try and populate the recoder!");
+                            
+                        }
+                        else
+                        {
+                            Debug.LogWarning($"Return was null!");
+                        }
+                        
+                    }
+                } catch (System.Exception ex)
+                {
+                    Debug.LogWarning($"Error: {ex.Message}| Running 'SetupSettingsFileOnBoot");
+                    anyErrors = true;
+
+                }
+                if (!anyErrors)
+                {
+                    var someWindow = (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
+                    //someWindow.
+                    someWindow.SetRecorderControllerSettings(settings);
+                }
+                Debug.LogWarning($"Settings Data Outcome after FileOnBoot {settingsData.RecorderNotes}");
+                
+                
+
+                //settings = JsonUtility.FromJson<RecorderControllerSettings>(TheRecorderSettingsJSON);
+                //we have something in the editorprefs, but we need to load it from the JSON
+            }
+            else
+            {
+                Debug.LogWarning($"no Settings file in the editorPrefs");
+                //need to generate my settingsData file
+                //single Frame Mode as a generic first one
+                settingsData = new FPRecorderSettingsJSON(RecordMode.SingleFrame, 1, true, true);
+                //need to generate a blank 
+                //save the settings as json and store them to my editerprefs
+                TheRecorderSettingsJSON = JsonUtility.ToJson(settingsData);
+
+
+                settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
+                settings.ExitPlayMode = settingsData.ExitPlayMode;
+                settings.CapFrameRate = settingsData.CapFPS;
+                settings.FrameRate = settingsData.FrameRate;
+                settings.FrameRatePlayback = settingsData.Playback;
+                HaveRecorderSettings = true;
+            }
+
+        }
+        [MenuItem(LoadRecorderFromData,priority = FP_UtilityData.ORDER_SUBMENU_LVL5+8)]
+        static protected void LoadFromData()
+        {
+            SetupSettingsFileOnBoot();
+        }
+        [MenuItem(ResetAllEditorData,priority = FP_UtilityData.ORDER_SUBMENU_LVL4 + 6)]
+        static protected void ResetData()
+        {
+            settingsData = new FPRecorderSettingsJSON(RecordMode.SingleFrame, 1, true, true);
+
+            //save the settings as json and store them to my editerprefs
+            TheRecorderSettingsJSON = JsonUtility.ToJson(settingsData);
+
+            settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
+            settings.ExitPlayMode = settingsData.ExitPlayMode;
+            settings.CapFrameRate = settingsData.CapFPS;
+            settings.FrameRate = settingsData.FrameRate;
+            settings.FrameRatePlayback = settingsData.Playback;
+            HaveRecorderSettings = true;
+            Debug.LogWarning($"Reset the editor data");
+            
+            if (NumberCameraTags > 0)
+            {
+                RecorderEnabled = true;
+                Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", true);
+            }
+            else
+            {
+                RecorderEnabled = false;
+                Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", false);
+            }
+            
+            EditorUtility.DisplayDialog("Reset Editor Pref Data!", $"Recorder Enabled? {RecorderEnabled}. Are there Tags? {NumberCameraTags} FP_Record camera tags in scene", "OK");
+        }
+        [MenuItem(CreateAndAdd360RecorderToRecorderSettings, priority = FP_UtilityData.ORDER_SUBMENU_LVL3)]
+        static protected void CreateAndAddNew360RecorderDataElement()
+        {
+            //use existing data element to generate new element
+            if (settingsData != null)
+            {
+                var newList = new List<FPWildCards>
+                {
+                    FPWildCards.RECORDER,
+                    FPWildCards.TAKE
+                };
+
+                var dataItem = settingsData.CreateImageSequence360PNG(2048, 4096, ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageRecorderSettings.EXRCompressionType.Zip, newList);
+                dataItem.RecorderName = "FP_360Setup" + "_"+(settingsData.RecorderData.Count+1).ToString();
+                //update name by one value
+                
+                settingsData.RecorderData.Add(dataItem);
+                //need to back up my data
+                TheRecorderSettingsJSON = JsonUtility.ToJson(settingsData);
+                Debug.LogWarning($"JSON DUMP| \n {TheRecorderSettingsJSON}");
+                //now lets use our data class and populate the entire recorder
+                AddFPRecorderDataToRecorderWindow();
+
+            }
+            else
+            {
+                Debug.LogError($"Missing a reference to settingsData!");
+            }
+        }
+        static protected void AddFPRecorderDataToRecorderWindow()
+        {
+            //going from settingsData to settings to then the window
+            //need to probably clear it and add it in from data?
+            string outMessages = "";
+            var settingsReturn = settingsData.GenerateRecorderControllerSettingsForUnity(out outMessages);
+            Debug.LogWarning($"Messages returned: {outMessages}");
+            if (settingsReturn.Item2)
+            {
+                settings = settingsReturn.Item1;
+            }
+            else
+            {
+                Debug.LogWarning($"Settings isn't exactly right, need to rebuild it?");
+                settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
+                settings.ExitPlayMode = settingsData.ExitPlayMode;
+                settings.CapFrameRate = settingsData.CapFPS;
+                settings.FrameRate = settingsData.FrameRate;
+                settings.FrameRatePlayback = settingsData.Playback;
+                settings = settingsReturn.Item1;
+
+            }
+            var someWindow = (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
+            //someWindow.
+            someWindow.SetRecorderControllerSettings(settings);
+        }
+
+
+        #endregion
         [MenuItem(RecordTakeOutputFile, priority =FP_UtilityData.ORDER_SUBMENU_LVL2)]
         static protected void GenerateOutputFileRecorderTake()
         {
@@ -493,7 +653,8 @@ namespace FuzzPhyte.Recorder.Editor
             // Optionally, log the creation
             Debug.Log("ExampleAsset created at " + assetPath);
         }
-        [MenuItem(CreateAndAdd360RecorderToRecorderSettings,priority = FP_UtilityData.ORDER_SUBMENU_LVL3)]
+        #region REPLACING OLD MENU STUFF For EASY BUTTON
+        //[MenuItem(CreateAndAdd360RecorderToRecorderSettings,priority = FP_UtilityData.ORDER_SUBMENU_LVL3+5)]
         static protected void CreateAndAdd360Recorder()
         {
             Generate360Configuration();
@@ -502,7 +663,7 @@ namespace FuzzPhyte.Recorder.Editor
         /// <summary>
         /// Core Function to add a Selected Recorder to the Recorder Editor Tool via Unity
         /// </summary>
-        [MenuItem(AddAnySingleRecorderToRecorderSettings, priority = FP_UtilityData.ORDER_SUBMENU_LVL3+1)]
+        //[MenuItem(AddAnySingleRecorderToRecorderSettings, priority = FP_UtilityData.ORDER_SUBMENU_LVL3+1)]
         static protected void AddARecorderToUnityRecorder()
         {
             var data = Selection.activeObject as FP_RecorderDataSO;
@@ -638,6 +799,7 @@ namespace FuzzPhyte.Recorder.Editor
                 Debug.LogError($"You need to select an 'FP_RecorderDataSO' type, not a {Selection.activeObject.ToString()}");
             }
         }
+        #endregion
         /// <summary>
         /// Clean up items we might have created on the editor side
         /// </summary>

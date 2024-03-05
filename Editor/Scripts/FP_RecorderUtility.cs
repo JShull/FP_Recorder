@@ -30,19 +30,7 @@ namespace FuzzPhyte.Recorder.Editor
         }
        
     }
-    [InitializeOnLoad]
-    static class FPRecorderStartup
-    {
-        static FPRecorderStartup()
-        {
-            if (!SessionState.GetBool(FP_RecorderUtility.PRODUCT_NAME + "_STARTUP", false))
-            {
-                Debug.Log($"First Init. on FPRecorderStartup");
-                FPMenu.SetupSettingsFileOnBoot();
-                SessionState.SetBool(FP_RecorderUtility.PRODUCT_NAME + "_STARTUP", true);
-            }
-        }
-    }
+    
 
     /*
      * https://forum.unity.com/threads/control-unity-recorder-from-script.840946/

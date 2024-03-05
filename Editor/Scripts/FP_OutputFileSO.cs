@@ -16,7 +16,7 @@ namespace FuzzPhyte.Recorder.Editor
     {
         //public CreateAssetMenuAttribute MenuTest;
         //this would go on an actual editor script
-        [HideInInspector]
+        
         public string FileName;
         public List<FPWildCards> WildCardsV;
         public OutputPath OutputPath;

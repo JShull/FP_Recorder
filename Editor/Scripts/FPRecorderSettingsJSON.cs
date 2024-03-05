@@ -8,6 +8,7 @@ using UnityEditor.Recorder.Input;
 using UnityEditor.Recorder.Encoder;
 using FuzzPhyte.Utility.Editor;
 using UnityEditor;
+using UnityEngine.TestTools;
 
 namespace FuzzPhyte.Recorder.Editor
 {
@@ -16,14 +17,116 @@ namespace FuzzPhyte.Recorder.Editor
     {
         public FrameRatePlayback Playback;
         public RecordMode RecordMode;
+        public float FrameRate = 30;
         public int TargetFrame;
         public int StartIntervalFrame;
         public int EndIntervalFrame;
         public float StartTimeInterval;
-        public float EndTimeIntervarl;
+        public float EndTimeInterval;
         public bool CapFPS = true;
+        public bool ExitPlayMode = true;
+        public string RecorderNotes;
         public List<FPRecorderDataStruct> RecorderData = new List<FPRecorderDataStruct>();
-        
+
+        /// <summary>
+        /// Frame Interval Mode Setup
+        /// </summary>
+        /// <param name="recMode"></param>
+        /// <param name="targetFrame"></param>
+        /// <param name="startIntervalFrame"></param>
+        /// <param name="endIntervalFrame"></param>
+        /// <param name="capFPS"></param>
+        public FPRecorderSettingsJSON(RecordMode recMode,int targetFrame,int startIntervalFrame,int endIntervalFrame, float fps, FrameRatePlayback playback, bool capFPS,bool exitPlayMode=true)
+        {
+            RecordMode = recMode;
+            Playback = playback;
+            if(RecordMode != RecordMode.FrameInterval)
+            {
+                //we passed frame information but aren't using frame interval
+                Debug.LogWarning($"You passed Frame Interval Data but have the {RecordMode} mode on, this is usually a mixup and you might have wanted a different constructor");
+                CapFPS = capFPS;
+                ExitPlayMode = exitPlayMode;
+                if (RecordMode == RecordMode.SingleFrame)
+                {
+                    TargetFrame = 1;
+                }
+                if (RecordMode == RecordMode.TimeInterval)
+                {
+                    StartTimeInterval = 0;
+                    EndTimeInterval = 1;
+                }
+                return;
+            }
+            FrameRate = fps;
+            ExitPlayMode = exitPlayMode;
+            TargetFrame = targetFrame;
+            StartIntervalFrame = startIntervalFrame;
+            EndIntervalFrame = endIntervalFrame;
+            CapFPS = capFPS;
+        }
+        /// <summary>
+        /// Time Interval Mode Setup
+        /// </summary>
+        /// <param name="recMode"></param>
+        /// <param name="targetFrame"></param>
+        /// <param name="startTimeInterval"></param>
+        /// <param name="endTimeInterval"></param>
+        /// <param name="capFPS"></param>
+        public FPRecorderSettingsJSON(RecordMode recMode,int targetFrame,float startTimeInterval, float endTimeInterval, float fps, FrameRatePlayback playback,bool capFPS,bool exitPlayMode=true)
+        {
+            RecordMode = recMode;
+            Playback = playback;
+            if (RecordMode != RecordMode.TimeInterval)
+            {
+                //we passed frame information but aren't using frame interval
+                Debug.LogWarning($"You passed Time Interval Data but have the {RecordMode} mode on, this is usually a mixup and you might have wanted a different constructor");
+                CapFPS = capFPS;
+                ExitPlayMode = exitPlayMode;
+                if (RecordMode == RecordMode.FrameInterval)
+                {
+                    StartIntervalFrame = 0;
+                    EndIntervalFrame = 1;
+
+                }
+                if (RecordMode == RecordMode.SingleFrame)
+                {
+                    TargetFrame = 1;
+                }
+                return;
+            }
+            FrameRate = fps;
+            ExitPlayMode = exitPlayMode;
+            TargetFrame = targetFrame;
+            StartTimeInterval = startTimeInterval;
+            EndTimeInterval = endTimeInterval;
+            CapFPS = capFPS;
+        }
+        public FPRecorderSettingsJSON(RecordMode recMode, int singleFrame,bool capFPS, bool exitPlayMode=true)
+        {
+            RecordMode = recMode;
+            Playback = FrameRatePlayback.Constant;
+            if (RecordMode != RecordMode.SingleFrame)
+            {
+                Debug.LogWarning($"You passed Single Frame Data but have the {RecordMode} mode active, this is usually a mixup and you might have wanted a different constructor");
+                CapFPS = capFPS;
+                ExitPlayMode = exitPlayMode;
+                if (RecordMode == RecordMode.FrameInterval)
+                {
+                    StartIntervalFrame = 0;
+                    EndIntervalFrame = 1;
+                    
+                }
+                if(RecordMode == RecordMode.TimeInterval)
+                {
+                    StartTimeInterval = 0;
+                    EndTimeInterval = 1;
+                }
+                return;
+            }
+            ExitPlayMode = exitPlayMode;
+            TargetFrame = singleFrame;
+            CapFPS = capFPS;
+        }
         #region Methods to Convert
         public RecorderControllerSettings ReturnUnityRecorderControllerSettingsFormat()
         {
@@ -40,7 +143,7 @@ namespace FuzzPhyte.Recorder.Editor
                     MyPreset.SetRecordModeToFrameInterval(StartIntervalFrame, EndIntervalFrame);
                     break;
                 case RecordMode.TimeInterval:
-                    MyPreset.SetRecordModeToTimeInterval(StartTimeInterval, EndTimeIntervarl);
+                    MyPreset.SetRecordModeToTimeInterval(StartTimeInterval, EndTimeInterval);
                     break;
             }
             MyPreset.FrameRatePlayback = Playback;
@@ -48,6 +151,10 @@ namespace FuzzPhyte.Recorder.Editor
             return MyPreset;
 
         }
+        /// <summary>
+        /// Returns a list of RecorderSettings to be utilized in the Unity Editor
+        /// </summary>
+        /// <returns></returns>
         public List<RecorderSettings> ReturnUnityRecorderByData()
         {
             //take our RecorderData and dump out the RecorderSettings by Data Type
@@ -88,8 +195,8 @@ namespace FuzzPhyte.Recorder.Editor
                             break;
                        
                     }
-                    blankImageRecorder.OutputFile = recData.OutputFileData.FileName;
-                    movieImageRecorder.OutputFile = recData.OutputFileData.FileName;
+                    blankImageRecorder.OutputFile = recData.OutputFileData;
+                    movieImageRecorder.OutputFile = recData.OutputFileData;
                     blankImageRecorder.name = recData.RecorderName;
                     movieImageRecorder.name = recData.RecorderName;
 
@@ -127,7 +234,7 @@ namespace FuzzPhyte.Recorder.Editor
                     if (recData.RecorderType == FPRecorderType.Audio)
                     {
                         blankAudioRecorder = recData.AudioInputFormatData;
-                        blankAudioRecorder.OutputFile = recData.OutputFileData.FileName;
+                        blankAudioRecorder.OutputFile = recData.OutputFileData;
                         blankAudioRecorder.name = recData.RecorderName;
                         RecList.Add(blankAudioRecorder);
                     }
@@ -136,7 +243,7 @@ namespace FuzzPhyte.Recorder.Editor
                         if(recData.RecorderType == FPRecorderType.AnimationClip)
                         {
                             blankAnimClipRecorder = recData.AnimationClipInputFormatData;
-                            blankAnimClipRecorder.OutputFile = recData.OutputFileData.FileName;
+                            blankAnimClipRecorder.OutputFile = recData.OutputFileData;
                             blankAnimClipRecorder.name = recData.RecorderName;
                             RecList.Add(blankAnimClipRecorder);
                         }
@@ -149,8 +256,114 @@ namespace FuzzPhyte.Recorder.Editor
             return RecList;
         }
         #endregion
+        public (RecorderControllerSettings,bool) GenerateRecorderControllerSettingsForUnity(out string messages)
+        {
+            messages = "";
+            RecorderNotes = "";
+            var rcs = ScriptableObject.CreateInstance<RecorderControllerSettings>();
+            rcs.ExitPlayMode = ExitPlayMode;
+            rcs.CapFrameRate = CapFPS;
+            rcs.FrameRate = FrameRate;
+            rcs.FrameRatePlayback = Playback;
+            var recorderSettingsList = ReturnUnityRecorderByData();
+            switch (RecordMode)
+            {
+                case RecordMode.Manual:
+                    break;
+                case RecordMode.SingleFrame:
+                    rcs.SetRecordModeToSingleFrame(this.TargetFrame);
+                    break;
+                case RecordMode.FrameInterval:
+                    rcs.SetRecordModeToFrameInterval(StartIntervalFrame, EndIntervalFrame);
+                    break;
+                case RecordMode.TimeInterval:
+                    rcs.SetRecordModeToTimeInterval(StartTimeInterval, EndTimeInterval);
+                    break;
+            }
+            
+            try
+            {
 
+                
+
+                
+                bool listGood = false;
+                if (recorderSettingsList.Count ==0)
+                {
+                    messages += "Recorder Settings List Count == 0";
+                    RecorderNotes += "Recorder Settings List Count == 0";
+                    listGood = false;
+                }
+                else
+                {
+                    messages += $"Recorder List: {recorderSettingsList.Count}";
+                    RecorderNotes += $"Recorder List: {recorderSettingsList.Count}";
+                    listGood = true;
+                    //Debug.Log();
+                    for (int i = 0; i < recorderSettingsList.Count; i++)
+                    {
+                        //Debug.Log($"Adding a Recorder from data: {recorderSettingsList[i].RecordMode}");
+                        messages += "\n" + $"Adding a Recorder from data: {recorderSettingsList[i].RecordMode}";
+                        RecorderNotes += "\n" + $"Adding a Recorder from data: {recorderSettingsList[i].RecordMode}";
+                        var settingFile = recorderSettingsList[i];
+                        rcs.AddRecorderSettings(settingFile);
+                    }
+                }
+
+                return (rcs, listGood);
+            }
+            catch(Exception ex)
+            {
+                messages += ex.Message.ToString();
+                return (null, false);
+            }
+            
+        }
+        /// <summary>
+        /// Generic 360 Image Settings
+        /// </summary>
+        /// <param name="height"></param>
+        /// <param name="width"></param>
+        /// <param name="imgFormat"></param>
+        /// <param name="compType"></param>
+        /// <param name="wCards"></param>
+        /// <param name="camTag"></param>
+        /// <param name="renderStereo"></param>
+        /// <param name="flip"></param>
+        /// <returns></returns>
+        public FPRecorderDataStruct CreateImageSequence360PNG(int height, int width, ImageRecorderSettings.ImageRecorderOutputFormat imgFormat, ImageRecorderSettings.EXRCompressionType compType, List<FPWildCards> wCards, string camTag = "MainCamera", bool renderStereo = false, bool flip = false)
+        {
+            var newDataStruct = new FPRecorderDataStruct();
+            //set our classifiers
+            newDataStruct.RecorderType = FPRecorderType.ImageSequence;
+            newDataStruct.Source = FPInputSettings.a360View;
+            newDataStruct.Encoder = FPEncoderType.ImageEncoder;
+            var inputSettings = new Camera360InputSettings();
+            var outputFormat = new ImageRecorderSettings();
+
+            //input
+            inputSettings.OutputHeight = height;
+            inputSettings.OutputWidth = width;
+            inputSettings.RenderStereo = renderStereo;
+            inputSettings.FlipFinalOutput = flip;
+            inputSettings.CameraTag = camTag;
+            //output format
+            outputFormat.OutputFormat = imgFormat;
+            outputFormat.EXRCompression = compType;
+            //output file & set files to the 
+            newDataStruct.OutputFileData = CreateOutputFileFromWildCards(wCards).FileName;
+            newDataStruct.ThreeSixInputFormatData = inputSettings;
+            newDataStruct.ImageSeqOutputFormatData = outputFormat;
+            return newDataStruct;
+        }
+        private FP_OutputFileSO CreateOutputFileFromWildCards(List<FPWildCards> allWildCards)
+        {
+            var outputFileAsset = FP_OutputFileSO.CreateInstance(allWildCards, UnityEditor.Recorder.OutputPath.Root.AssetsFolder);
+            return outputFileAsset;
+        }
     }
+
+    
     [Serializable]
     public struct FPRecorderDataStruct
     {
@@ -180,7 +393,7 @@ namespace FuzzPhyte.Recorder.Editor
         //public FP_OutputFormatSO OutputFormatData;
         //all possible outputfiles - thankfully only one type
 
-        public FP_OutputFileSO OutputFileData;
+        public string OutputFileData;
 
         public int NumberOfCameras;
         public GameObject GameObjectRef;
@@ -188,6 +401,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             this = passedData;
         }
+        
         public static FPRecorderDataStruct CreateEmptyDataClassObject(FPRecorderType recType, FPInputSettings sourceT, FPEncoderType encoderT,string recordName, GameObject gameObjectSceneRef=null)
         {
             var data = new FPRecorderDataStruct();
@@ -254,9 +468,10 @@ namespace FuzzPhyte.Recorder.Editor
                 FPWildCards.TAKE
             };
             var outputFileAsset = FP_OutputFileSO.CreateInstance(_cards, UnityEditor.Recorder.OutputPath.Root.AssetsFolder);
-            data.OutputFileData = outputFileAsset;
+            data.OutputFileData = outputFileAsset.FileName;
             return data;
         }
+        
 
         //return Animation Recorder Settings
         private static AnimationRecorderSettings ReturnUnityOutputFormatAnimtion(GameObject animData,AnimationInputSettings.CurveSimplificationOptions animCompression, bool ClampedTangents, bool RecordedHierarchy)
@@ -325,6 +540,7 @@ namespace FuzzPhyte.Recorder.Editor
             return dataObject;
             
         }
+        
 
     }
 
