@@ -435,6 +435,56 @@ namespace FuzzPhyte.Recorder.Editor
             New360RecorderDataCount(5, FP_RecorderUtility.CamTAG,startingNumberTag);
         }
         /// <summary>
+        /// Generate GameObjects from a list of items from data- JSON
+        /// </summary>
+        /// <param name="transformData"></param>
+        /// <param name="baseName"></param>
+        static void GenerateGameObjectFromDataList(List<FPTransformStruct>transformData,string baseName)
+        {
+            var currentCamsInScene = NumberCamerasInScene;
+            var endCamsInScene = NumberCamerasInScene + transformData.Count;
+            var numberToSpawn = transformData.Count;
+            if (NumberCameraTags < endCamsInScene)
+            {
+                //we need more tags
+                Debug.Log($"We need more tags!");
+                AddNumberTags(numberToSpawn, false);
+
+            }
+            GameObject newParent = new GameObject();
+            newParent.name = baseName + "_" + numberToSpawn + "_cameraParent";
+            newParent.transform.position = new Vector3(0, 0, 0);
+            //
+            if (cameraData == null)
+            {
+                cameraData = new FPRecorderGOCams();
+            }
+            for (int i = 0; i < numberToSpawn; i++)
+            {
+                GameObject newObj = new GameObject();
+                var dataObj = transformData[i];
+
+                newObj.name = dataObj.Name;
+                cameraData.GUIGameObjects.Add(newObj.name);
+
+
+                newObj.tag = dataObj.Tag; // Assign the tag
+                //assign position
+                newObj.transform.position = dataObj.Position;
+                newObj.transform.rotation = Quaternion.Euler(dataObj.Rotation);
+                newObj.transform.SetParent(newParent.transform);
+                //newObj.transform.localPosition = new Vector3(0, yStartHeight, (i + 1) * 0.5f);
+                Camera newCam = newObj.AddComponent<Camera>(); // Add Camera component
+                UnityEngine.Object.DestroyImmediate(newObj.GetComponent<AudioListener>()); // Remove the Audio Listener
+            }
+            NumberCamerasInScene += numberToSpawn;
+            //sync EditorPrefs cam data
+            TheCameraSettingsData = JsonUtility.ToJson(cameraData);
+            //select the parent item
+            Selection.activeGameObject = newParent;
+            //
+        }
+        /// <summary>
         /// Drop in gameobjects for cameras
         /// </summary>
         /// <param name="numberToSpawn"></param>
@@ -497,7 +547,7 @@ namespace FuzzPhyte.Recorder.Editor
             for (int i = 0; i < numRecorders; i++)
             {
                 var curTagValue = startTagNum + i;
-                var dataItem = settingsData.CreateImageSequence360PNG(2048, 4096, ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageSource.TaggedCamera, ImageRecorderSettings.EXRCompressionType.Zip, newList, startTag + curTagValue.ToString());
+                var dataItem = settingsData.CreateImageSequence360PNG(2048, 4096,2048, ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageSource.TaggedCamera, ImageRecorderSettings.EXRCompressionType.Zip, newList, startTag + curTagValue.ToString());
                 dataItem.RecorderName = "FP_360Setup_" + curTagValue.ToString();
                 //update name by one value
                 settingsData.RecorderData.Add(dataItem);
@@ -650,7 +700,7 @@ namespace FuzzPhyte.Recorder.Editor
                     FPWildCards.TAKE
                 };
 
-                var dataItem = settingsData.CreateImageSequence360PNG(2048, 4096, ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageSource.TaggedCamera,ImageRecorderSettings.EXRCompressionType.Zip, newList, FP_RecorderUtility.CamTAG);
+                var dataItem = settingsData.CreateImageSequence360PNG(2048, 4096,2048, ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageSource.TaggedCamera,ImageRecorderSettings.EXRCompressionType.Zip, newList, FP_RecorderUtility.CamTAG);
                 dataItem.RecorderName = "FP_360Setup" + "_"+(settingsData.RecorderData.Count+1).ToString();
                 //update name by one value
                 
@@ -697,10 +747,32 @@ namespace FuzzPhyte.Recorder.Editor
             //someWindow.
             someWindow.SetRecorderControllerSettings(settings);
         }
+        //Save items from the editor via the tags
+        static protected void SaveCameraPositions()
+        {
+            //use the tags as guidance
+            //FP_RecorderUtility.CamTAG
+            //    NumberCameraTags
+            for (int i = 0; i < NumberCameraTags; i++)
+            {
+                var searchTag = FP_RecorderUtility.CamTAG + i.ToString();
+                var allFoundItem = GameObject.FindGameObjectWithTag(searchTag);
+                if (allFoundItem != null)
+                {
+                    //throw it at my list
+                    settingsData.AddCameraData(allFoundItem);
+                }
+            }
+            //need to back up my data
+            TheRecorderSettingsJSON = JsonUtility.ToJson(settingsData);
+
+        }
         [MenuItem(WriteBackupJSON, priority = FP_UtilityData.ORDER_SUBMENU_LVL5 + 9)]
         static protected void WriteJSONToLocalFile()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.BACKUP);
+            //sync my camera data
+            SaveCameraPositions();
             var jsonAsset = TheRecorderSettingsJSON;
             //var asset = AnimationClipRecorder.CreateInstance(true, true, AnimationInputSettings.CurveSimplificationOptions.Lossless);
             string backupFile = "/FPBackup_"+System.DateTime.Now.ToString("yyyyMMdd_hhmm") +".json";
@@ -774,7 +846,8 @@ namespace FuzzPhyte.Recorder.Editor
                             }
                         }
                         //we need to now spawn the gameobjects based on this data
-                        GenerateGameObject(curCountSize, "FPCamera", FP_RecorderUtility.CamTAG);
+                        GenerateGameObjectFromDataList(settingsData.CameraPlacements, FP_RecorderUtility.BaseCamName);
+                        //GenerateGameObject(curCountSize, FP_RecorderUtility.BaseCamName, FP_RecorderUtility.CamTAG);
                         
                         var someWindow = (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
                         //someWindow.

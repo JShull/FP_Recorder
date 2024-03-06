@@ -7,9 +7,11 @@ using UnityEditor.Presets;
 using UnityEditor.Recorder.Input;
 using UnityEditor.Recorder.Encoder;
 using FuzzPhyte.Utility.Editor;
+using FuzzPhyte.Utility;
 using UnityEditor;
 using UnityEngine.TestTools;
-
+using Unity.Mathematics;
+using System.Linq;
 namespace FuzzPhyte.Recorder.Editor
 {
     [Serializable]
@@ -27,7 +29,7 @@ namespace FuzzPhyte.Recorder.Editor
         public bool ExitPlayMode = true;
         public string RecorderNotes;
         public List<FPRecorderDataStruct> RecorderData = new List<FPRecorderDataStruct>();
-
+        public List<FPTransformStruct> CameraPlacements = new List<FPTransformStruct>();
         /// <summary>
         /// Frame Interval Mode Setup
         /// </summary>
@@ -329,7 +331,7 @@ namespace FuzzPhyte.Recorder.Editor
         /// <param name="renderStereo"></param>
         /// <param name="flip"></param>
         /// <returns></returns>
-        public FPRecorderDataStruct CreateImageSequence360PNG(int height, int width, ImageRecorderSettings.ImageRecorderOutputFormat imgFormat, ImageSource imgSource,ImageRecorderSettings.EXRCompressionType compType, List<FPWildCards> wCards, string camTag = "MainCamera", bool renderStereo = false, bool flip = false)
+        public FPRecorderDataStruct CreateImageSequence360PNG(int height, int width, int mapsize, ImageRecorderSettings.ImageRecorderOutputFormat imgFormat, ImageSource imgSource,ImageRecorderSettings.EXRCompressionType compType, List<FPWildCards> wCards, string camTag = "MainCamera", bool renderStereo = false, bool flip = false)
         {
             var newDataStruct = new FPRecorderDataStruct();
             //set our classifiers
@@ -342,6 +344,7 @@ namespace FuzzPhyte.Recorder.Editor
             //input
             inputSettings.OutputHeight = height;
             inputSettings.OutputWidth = width;
+            inputSettings.MapSize = mapsize;
             inputSettings.RenderStereo = renderStereo;
             inputSettings.FlipFinalOutput = flip;
             inputSettings.Source = imgSource;
@@ -359,6 +362,34 @@ namespace FuzzPhyte.Recorder.Editor
         {
             var outputFileAsset = FP_OutputFileSO.CreateInstance(allWildCards, UnityEditor.Recorder.OutputPath.Root.AssetsFolder);
             return outputFileAsset;
+        }
+
+        /// <summary>
+        /// Convert a GameObject to our Serialized struct
+        /// </summary>
+        /// <param name="cameraData"></param>
+        public bool AddCameraData(GameObject cameraData)
+        {
+            var fooCars = CameraPlacements.Select(c => c.Tag == cameraData.tag);
+            int index = CameraPlacements.FindIndex(item => item.Tag == cameraData.tag);
+            if (index != -1)
+            {
+                //add it
+                FPTransformStruct newData = new FPTransformStruct()
+                {
+                    Tag = cameraData.tag,
+                    Position = cameraData.transform.position,
+                    Rotation = cameraData.transform.rotation.eulerAngles,
+                    Name = cameraData.name,
+                };
+                CameraPlacements.Add(newData);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+            
         }
     }
 
@@ -541,6 +572,15 @@ namespace FuzzPhyte.Recorder.Editor
         }
         
 
+    }
+
+    [Serializable]
+    public struct FPTransformStruct
+    {
+        public string Tag;
+        public string Name;
+        public float3 Position;
+        public float3 Rotation;
     }
 
 }

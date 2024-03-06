@@ -23,7 +23,9 @@ namespace FuzzPhyte.Recorder.Editor
         public const string BACKUP = "DataBackup";
         public const string SAMPLESPATH = "Assets/" + PRODUCT_NAME + "/Samples/URPSamples";
         public const string CamTAG = "FPCameraTag_";
-        
+        public const string BaseCamName = "FPCamera";
+
+
         public static string ReturnProductName()
         {
             return PRODUCT_NAME;
