@@ -8,44 +8,56 @@ using UnityEditor.Recorder;
 using System.IO;
 using System;
 using System.Text;
-
+using System.Linq;
 namespace FuzzPhyte.Recorder.Editor
 {
     public class FPMenu : MonoBehaviour, IFPProductEditorUtility
     {
-        private static RecorderControllerSettings settings;// = new RecorderControllerSettings();
+        //LOCAL CACHED SERIALIZABLE DATA FILES
+        private static RecorderControllerSettings settings;
         private static FPRecorderSettingsJSON settingsData;
+        private static FPRecorderGOCams cameraData;
         #region Editor Menu Configuration
+        //EDITOR PREFERENCES
         private const string SettingName = "FP_RecorderSettings";
-        private const string NumberCamTags = "FP_CamTagsCount";
+        private const string NumberCamTagsFileName = "FP_CamTagsCount";
+        private const string NumberCamerasSceneFileName = "FP_NumCamScene";
         private const string JSONEditorName = "FP_RecorderSettingsJSON";
         private const string HaveSettingsFileName = "FP_HaveSettings";
+        private const string CameraSettingsFileName = "FP_CamSettings";
         //
-        private const string CustomMenuBasePath = FP_UtilityData.MENU_COMPANY+"/"+FP_RecorderUtility.PRODUCT_NAME;
-        private const string SetupMenuBase = FP_UtilityData.MENU_COMPANY + "/" + FP_RecorderUtility.PRODUCT_NAME + "/Setup";
-        private const string SetupAddTenCameras = SetupMenuBase + "/Tags/Generate Ten CameraTags";
-        private const string SetupAddFiveCameras = SetupMenuBase + "/Tags/Generate Five CameraTags";
-        private const string SetupRemoveTenCameras = SetupMenuBase + "/Tags/Remove Ten CameraTags";
-        private const string SetupRemoveFiveCameras = SetupMenuBase + "/Tags/Remove Five CameraTags";
+        private const string MenuB = FP_UtilityData.MENU_COMPANY+"/"+FP_RecorderUtility.PRODUCT_NAME;
+        private const string SetupMenuB = FP_UtilityData.MENU_COMPANY + "/" + FP_RecorderUtility.PRODUCT_NAME + "/Setup";
+        private const string SetupAddTenCameras = SetupMenuB + "/"+FP_RecorderUtility.SUB2+"/Plus 10 CameraTags";
+        private const string SetupAddFiveCameras = SetupMenuB + "/" + FP_RecorderUtility.SUB2 +"/Plus 5 CameraTags";
+        private const string SetupRemoveTenCameras = SetupMenuB + "/" + FP_RecorderUtility.SUB2 + "/Remove 10 CameraTags";
+        private const string SetupRemoveFiveCameras = SetupMenuB + "/" + FP_RecorderUtility.SUB2 + "/Remove 5 CameraTags";
         //
-        private const string LoadRecorderFromData = SetupMenuBase + "/Data/Load from Editor";
-        private const string WriteBackupJSON = SetupMenuBase + "/Data/Save JSON Backup";
-        private const string ReadBackupJSON = SetupMenuBase + "/Data/Read JSON Backup";
-        private const string RemoveAllFPCameras = SetupMenuBase + "/Reset/Reset All FPCameraTags";
-        private const string ResetAllEditorData = SetupMenuBase + "/Reset/Reset All Editor DATA";
+        private const string LoadRecorderFromData = SetupMenuB + "/Data/Load from Editor";
+        private const string WriteBackupJSON = SetupMenuB + "/Data/Save JSON Backup";
+        private const string ReadBackupJSON = SetupMenuB + "/Data/Read JSON Backup";
+        private const string RemoveAllFPCameras = SetupMenuB + "/Reset/Reset All FPCameraTags";
+        private const string ResetAllEditorData = SetupMenuB + "/Reset/Reset All Editor DATA";
+        //fake menus
+        private const string DateOutputHeader = MenuB + "/DATA MENU";
+        private const string CreateOutputHeader = MenuB + "/CREATE MENU";
         //
-        private const string OutputFormat = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT3;
-        private const string InputFile = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT2;
-        private const string RecorderType = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT1;
-        private const string OutputFile = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT4;
+        private const string OutputFormat = MenuB + "/"+FP_RecorderUtility.SUB0 +" "+ FP_RecorderUtility.CAT3;
+        private const string InputFile = MenuB + "/" + FP_RecorderUtility.SUB0 + " " + FP_RecorderUtility.CAT2;
+        private const string RecorderType = MenuB + "/" + FP_RecorderUtility.SUB0 + " " + FP_RecorderUtility.CAT1;
+        private const string OutputFile = MenuB + "/" + FP_RecorderUtility.SUB0 + " " + FP_RecorderUtility.CAT4;
+        private const string UnityRecorder = MenuB + "/" + FP_RecorderUtility.SUB0 + " " + FP_RecorderUtility.CAT5;
         //Configuration
-        private const string DefaultConfigurationFileMenu = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT0;
+        private const string DefaultConfigurationFileMenu = MenuB + "/"+ FP_RecorderUtility.SUB0 + " " + FP_RecorderUtility.CAT0;
         private const string CGenericConfigMenu = DefaultConfigurationFileMenu + "/Default Config.";
         private const string C360ConfigMenu = DefaultConfigurationFileMenu + "/360 Config.";
         //Add Recorder
-        private const string AddRecorderFileMenu = CustomMenuBasePath + "/Create & Place " + FP_RecorderUtility.CAT5;
+        private const string AddRecorderFileMenu = MenuB + "/Create/ " + FP_RecorderUtility.CAT5;
         private const string AddAnySingleRecorderToRecorderSettings = AddRecorderFileMenu + "/Add Selected Recorder";
-        private const string CreateAndAdd360RecorderToRecorderSettings = AddRecorderFileMenu + "/Create & Add: 360";
+        private const string CreateAndAdd360RecorderToRecorderSettings = UnityRecorder + "/Add Unity Recorder: 360";
+        //additional gameobject cameras
+        private const string AddGameObjectFileMenu = MenuB + "/Create & Place/"+FP_RecorderUtility.CAT6;
+        private const string FiveCameraSpawnSettings = AddGameObjectFileMenu + "/5 360-Cameras";
         //Input Format
         private const string CamThreeSixtyInput = InputFile + "/360Cam";
         private const string RecordTakeOutputFile = OutputFile + "/<Recorder><Take> File";
@@ -70,8 +82,14 @@ namespace FuzzPhyte.Recorder.Editor
         }
         public static int NumberCameraTags
         {
-            get { return EditorPrefs.GetInt(NumberCamTags); }
-            set { EditorPrefs.SetInt(NumberCamTags, value); }
+            get { return EditorPrefs.GetInt(NumberCamTagsFileName); }
+            set { EditorPrefs.SetInt(NumberCamTagsFileName, value); }
+        }
+        //might not need this
+        public static int NumberCamerasInScene
+        {
+            get { return EditorPrefs.GetInt(NumberCamerasSceneFileName); }
+            set { EditorPrefs.SetInt(NumberCamerasSceneFileName, value); }
         }
         public static string TheRecorderSettingsJSON
         {
@@ -83,18 +101,23 @@ namespace FuzzPhyte.Recorder.Editor
             get { return EditorPrefs.GetBool(HaveSettingsFileName); }
             set { EditorPrefs.SetBool(HaveSettingsFileName, value); }
         }
+        public static string TheCameraSettingsData
+        {
+            get { return EditorPrefs.GetString(CameraSettingsFileName); }
+            set { EditorPrefs.SetString(CameraSettingsFileName, value); }
+        }
         #endregion
         #region Tags & Setup
 
         [MenuItem(SetupAddTenCameras,priority = FP_UtilityData.ORDER_SUBMENU_LVL5)]
         static protected void AddTenCameraTags()
         {
-            AddNumberTags(10);
+            AddNumberTags(10,true);
         }
         [MenuItem(SetupAddFiveCameras, priority = FP_UtilityData.ORDER_SUBMENU_LVL5+1)]
         static protected void AddFiveCameraTags()
         {
-            AddNumberTags(5);
+            AddNumberTags(5,true);
         }
         [MenuItem(RemoveAllFPCameras, priority =FP_UtilityData.ORDER_SUBMENU_LVL4+5)]
         static protected void RemoveAllCameraTagsMatchingPattern()
@@ -118,16 +141,16 @@ namespace FuzzPhyte.Recorder.Editor
             }
             RecorderEnabled = false;
             NumberCameraTags = 0;
+            
             Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", false);
             EditorUtility.DisplayDialog("Removed All Camera Tags",$"{_matchingTags.Count} Tags have been removed. Now there are {NumberCameraTags} FP_Record camera tags in scene" , "OK");
  
         }
-        
         /// <summary>
         /// Adds 'x' number of camera tags
         /// </summary>
         /// <param name="numberTags"></param>
-        static protected void AddNumberTags(int numberTags)
+        static protected void AddNumberTags(int numberTags, bool notifyMenu)
         {
             var startingCamNum = NumberCameraTags;
             var endCamValue = NumberCameraTags + numberTags;
@@ -140,20 +163,23 @@ namespace FuzzPhyte.Recorder.Editor
 
             RecorderEnabled = true;
 
-            var someWindow = (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
-            
-            
-            Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", true);
-            EditorUtility.DisplayDialog($"Added {numberTags} Camera Tags", $"'{FP_RecorderUtility.CamTAG}' with an '0,1,2,...' have been adedd! You now have {NumberCameraTags} FP_Record camera tags in the Project.", "OK");
+            //var someWindow = (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
+
+            if (notifyMenu)
+            {
+                Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", true);
+                EditorUtility.DisplayDialog($"Added {numberTags} Camera Tags", $"'{FP_RecorderUtility.CamTAG}' with an '0,1,2,...' have been adedd! You now have {NumberCameraTags} FP_Record camera tags in the Project.", "OK");
+
+            }
 
         }
         
-        [MenuItem(SetupRemoveFiveCameras,priority =FP_UtilityData.ORDER_SUBMENU_LVL5+3)]
+        [MenuItem(SetupRemoveFiveCameras,priority =FP_UtilityData.ORDER_SUBMENU_LVL7+3)]
         static protected void RemoveFiveCameraTags()
         {
             RemoveNumberTags(5);
         }
-        [MenuItem(SetupRemoveTenCameras,priority =FP_UtilityData.ORDER_SUBMENU_LVL5+2)]
+        [MenuItem(SetupRemoveTenCameras,priority =FP_UtilityData.ORDER_SUBMENU_LVL7+2)]
         static protected void RemoveTenCameraTags()
         {
             RemoveNumberTags(10);
@@ -178,7 +204,7 @@ namespace FuzzPhyte.Recorder.Editor
             EditorUtility.DisplayDialog($"Removed {numberTags} Camera Tags", $"'{FP_RecorderUtility.CamTAG}' with an '0,1,2,...' have been Removed! You now have {NumberCameraTags} FP_Record camera tags in the Project.", "OK");
 
         }
-        [MenuItem("FuzzPhyte/FP_Recorder/Ready",priority=FP_UtilityData.ORDER_SUBMENU_LVL4)]
+        [MenuItem("FuzzPhyte/FP_Recorder/Ready",priority=FP_UtilityData.ORDER_SUBMENU_LVL6)]
         static protected void SetupChecked()
         {
             if (RecorderEnabled)
@@ -194,7 +220,7 @@ namespace FuzzPhyte.Recorder.Editor
 
         #region Recorder Generation
 
-        [MenuItem(MovieRecorderMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL2)]
+        [MenuItem(MovieRecorderMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL1)]
         static protected void GenerateMovieRecorder()
         {
             // Define the folder path where the asset will be saved            
@@ -206,7 +232,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             return RecorderEnabled;
         }
-        [MenuItem(AnimClipRecorderMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL2+1)]
+        [MenuItem(AnimClipRecorderMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL1+1)]
         static protected void GenerateAnimClipRecorder()
         {
             // Define the folder path where the asset will be saved            
@@ -218,7 +244,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             return RecorderEnabled;
         }
-        [MenuItem(ImageSeqRecorderMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL2 + 2)]
+        [MenuItem(ImageSeqRecorderMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL1 + 2)]
         static protected void GenerateImageSeqRecorder()
         {
             // Define the folder path where the asset will be saved            
@@ -230,7 +256,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             return RecorderEnabled;
         }
-        [MenuItem(AudioRecorderMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL2 + 3)]
+        [MenuItem(AudioRecorderMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL1 + 3)]
         static protected void GenerateAudioRecorder()
         {
             // Define the folder path where the asset will be saved            
@@ -251,11 +277,29 @@ namespace FuzzPhyte.Recorder.Editor
             // Create the asset
             CreateAssetAt(asset, assetPath);
         }
-        
+
         #endregion
 
+        #region Fake Menu Headers
+        // FAKE HEADER
+        [MenuItem(DateOutputHeader, false, FP_UtilityData.ORDER_SUBMENU_LVL4)]
+        private static void FalseDataMenuHeader() { }
+
+        // Ensure the header is non-functional
+        [MenuItem(DateOutputHeader, true)]
+        private static bool FalseDataMenuHeaderValidation() => false;
+
+        [MenuItem(CreateOutputHeader, false, FP_UtilityData.ORDER_SUBMENU_LVL5)]
+        private static void FalseCreateConfigMenuHeader() { }
+
+        // Ensure the header is non-functional
+        [MenuItem(CreateOutputHeader, true)]
+        private static bool FalseCreateHeaderValidation() => false;
+        #endregion
         #region Recorders OutputFormat
-        [MenuItem(AnimClipOutput, priority = FP_UtilityData.ORDER_SUBMENU_LVL2)]
+
+
+        [MenuItem(AnimClipOutput, priority = FP_UtilityData.ORDER_SUBMENU_LVL1)]
         static protected void GenerateOutputAnimationClip()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
@@ -272,7 +316,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             return RecorderEnabled;
         }
-        [MenuItem(MovieOutputMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL2+1)]
+        [MenuItem(MovieOutputMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL1+1)]
         static protected void GenerateOutputMovieEncoderUnity()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
@@ -288,7 +332,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             return RecorderEnabled;
         }
-        [MenuItem(MovieOutputProResMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL2+2)]
+        [MenuItem(MovieOutputProResMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL1+2)]
         static protected void GenerateOutputMovieEncoderProRes()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
@@ -306,7 +350,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             return RecorderEnabled;
         }
-        [MenuItem(MovieOutputGif, priority =FP_UtilityData.ORDER_SUBMENU_LVL2+3)]
+        [MenuItem(MovieOutputGif, priority =FP_UtilityData.ORDER_SUBMENU_LVL1+3)]
         static protected void GenerateOutputMovieEncoderGif()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
@@ -323,7 +367,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             return RecorderEnabled;
         }
-        [MenuItem(ImageSeqOutput, priority = FP_UtilityData.ORDER_SUBMENU_LVL2+4)]
+        [MenuItem(ImageSeqOutput, priority = FP_UtilityData.ORDER_SUBMENU_LVL1+4)]
         static protected void GenerateOutputImageSequence()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
@@ -336,7 +380,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             return RecorderEnabled;
         }
-        [MenuItem(AudioOutput, priority = FP_UtilityData.ORDER_SUBMENU_LVL2+5)]
+        [MenuItem(AudioOutput, priority = FP_UtilityData.ORDER_SUBMENU_LVL1+5)]
         static protected void GenerateOutputAudio()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
@@ -352,7 +396,7 @@ namespace FuzzPhyte.Recorder.Editor
         #endregion
 
         #region Recorder InputFormat
-        [MenuItem(CamThreeSixtyInput, priority = FP_UtilityData.ORDER_SUBMENU_LVL2)]
+        [MenuItem(CamThreeSixtyInput, priority = FP_UtilityData.ORDER_SUBMENU_LVL1)]
         static protected void GenerateInputFileCamThreeSixty()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT2);
@@ -379,12 +423,102 @@ namespace FuzzPhyte.Recorder.Editor
             return ThreeSixtyRecordData.CreateInstance(camSettings);
         }
         #endregion
+        #region Populate GameObject in Hierarchy
+        [MenuItem(FiveCameraSpawnSettings,priority =FP_UtilityData.ORDER_SUBMENU_LVL5+2)]
+        protected static void Generate5CameraObjects()
+        {
+            //check if we have the right amount of tags to manage this
+            //we are going to add some cameras - when we do this we are going to increase the # we are tracking
+            GenerateGameObject(5, "FPCamera", FP_RecorderUtility.CamTAG);
+            //we need to now back that number out to reset our starting number for the data files themselves
+            var startingNumberTag = NumberCamerasInScene - 5;
+            New360RecorderDataCount(5, FP_RecorderUtility.CamTAG,startingNumberTag);
+        }
+        /// <summary>
+        /// Drop in gameobjects for cameras
+        /// </summary>
+        /// <param name="numberToSpawn"></param>
+        /// <param name="baseName"></param>
+        /// <param name="baseTag"></param>
+        /// <param name="yStartHeight"></param>
+        static void GenerateGameObject(int numberToSpawn,string baseName, string baseTag, float yStartHeight=1.7f)
+        {
+            var currentCamsInScene = NumberCamerasInScene;
+            var endCamsInScene = NumberCamerasInScene + numberToSpawn;
+            if (NumberCameraTags < endCamsInScene)
+            {
+                //we need more tags
+                Debug.Log($"We need more tags!");
+                AddNumberTags(numberToSpawn,false);
+                
+            }
+            GameObject newParent = new GameObject();
+            newParent.name = baseName + "_" + numberToSpawn + "_cameraParent";
+            newParent.transform.position = new Vector3(0, 0, 0);
+            
+            if (cameraData == null)
+            {
+                cameraData = new FPRecorderGOCams();
+            }
+            for(int i = 0; i < numberToSpawn; i++)
+            {
+                GameObject newObj = new GameObject();
+                int camTagNumber = currentCamsInScene + i;
+                newObj.name = baseName +"_"+i.ToString()+ "_" + camTagNumber.ToString(); // Unique name using GUID
+                cameraData.GUIGameObjects.Add(newObj.name);
+                
+
+                newObj.tag = baseTag + camTagNumber.ToString(); // Assign the tag
+                newObj.transform.SetParent(newParent.transform);
+                newObj.transform.localPosition = new Vector3(0, yStartHeight, (i+1)*0.5f);
+                Camera newCam = newObj.AddComponent<Camera>(); // Add Camera component
+                UnityEngine.Object.DestroyImmediate(newObj.GetComponent<AudioListener>()); // Remove the Audio Listener
+            }
+            NumberCamerasInScene += numberToSpawn;
+            //sync EditorPrefs cam data
+            TheCameraSettingsData = JsonUtility.ToJson(cameraData);
+            //select the parent item
+            Selection.activeGameObject = newParent;
+            //update camera numbers  
+        }
+        /// <summary>
+        /// Generate Recorder Data by Number of Cameras Needed
+        /// </summary>
+        /// <param name="numRecorders"></param>
+        /// <param name="startTag"></param>
+        static protected void New360RecorderDataCount(int numRecorders, string startTag, int startTagNum)
+        {
+            var newList = new List<FPWildCards>
+            {
+                FPWildCards.RECORDER,
+                FPWildCards.TAKE
+            };
+            
+            for (int i = 0; i < numRecorders; i++)
+            {
+                var curTagValue = startTagNum + i;
+                var dataItem = settingsData.CreateImageSequence360PNG(2048, 4096, ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageSource.TaggedCamera, ImageRecorderSettings.EXRCompressionType.Zip, newList, startTag + curTagValue.ToString());
+                dataItem.RecorderName = "FP_360Setup_" + curTagValue.ToString();
+                //update name by one value
+                settingsData.RecorderData.Add(dataItem);
+                //spawn a gameobject camera
+            }
+
+
+
+            //need to back up my data
+            TheRecorderSettingsJSON = JsonUtility.ToJson(settingsData);
+            Debug.LogWarning($"JSON DUMP| \n {TheRecorderSettingsJSON}");
+            //now lets use our data class and populate the entire recorder
+            AddFPRecorderDataToRecorderWindow();
+        }
+        #endregion
         #region New Data Menu Items
         /// <summary>
         /// Checks to see if we have recorder settings
         /// if we do we try to load it and serialize/deserialize it from that JSON format
         /// </summary>
-        [MenuItem(LoadRecorderFromData, priority = FP_UtilityData.ORDER_SUBMENU_LVL5 + 8)]
+        [MenuItem(LoadRecorderFromData, priority = FP_UtilityData.ORDER_SUBMENU_LVL7 + 8)]
         protected static void HaveJSONRecorderSettings()
         {
             if (HaveRecorderSettings)
@@ -402,14 +536,16 @@ namespace FuzzPhyte.Recorder.Editor
             }
             else
             {
-                Debug.LogWarning($"no Settings file in the editorPrefs");
+                Debug.LogWarning($"No Settings file in the editorPrefs");
                 //need to generate my settingsData file
                 //single Frame Mode as a generic first one
                 settingsData = new FPRecorderSettingsJSON(RecordMode.SingleFrame, 1, true, true);
+                cameraData = new FPRecorderGOCams();
                 //need to generate a blank 
                 //save the settings as json and store them to my editerprefs
                 TheRecorderSettingsJSON = JsonUtility.ToJson(settingsData);
                 settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
+                TheCameraSettingsData = JsonUtility.ToJson(cameraData);
                 settings.ExitPlayMode = settingsData.ExitPlayMode;
                 settings.CapFrameRate = settingsData.CapFPS;
                 settings.FrameRate = settingsData.FrameRate;
@@ -439,6 +575,7 @@ namespace FuzzPhyte.Recorder.Editor
                 if (settingsDataReturn.Item2)
                 {
                     settings = settingsDataReturn.Item1;
+                    
                     //try to load it into the editor
                     Debug.LogWarning($"File appears loaded correctly. Going to try and populate the recoder!");
 
@@ -474,10 +611,12 @@ namespace FuzzPhyte.Recorder.Editor
         static protected void ResetDataMenu()
         {
             settingsData = new FPRecorderSettingsJSON(RecordMode.SingleFrame, 1, true, true);
-
+            cameraData = new FPRecorderGOCams();
+            TheCameraSettingsData = JsonUtility.ToJson(cameraData);
+            NumberCamerasInScene = 0;
             //save the settings as json and store them to my editerprefs
             TheRecorderSettingsJSON = JsonUtility.ToJson(settingsData);
-
+ 
             settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
             settings.ExitPlayMode = settingsData.ExitPlayMode;
             settings.CapFrameRate = settingsData.CapFPS;
@@ -499,7 +638,7 @@ namespace FuzzPhyte.Recorder.Editor
             
             EditorUtility.DisplayDialog("Reset Editor Pref Data!", $"Recorder Enabled? {RecorderEnabled}. Are there Tags? {NumberCameraTags} FP_Record camera tags in scene", "OK");
         }
-        [MenuItem(CreateAndAdd360RecorderToRecorderSettings, priority = FP_UtilityData.ORDER_SUBMENU_LVL3)]
+        [MenuItem(CreateAndAdd360RecorderToRecorderSettings, priority = FP_UtilityData.ORDER_SUBMENU_LVL1+6)]
         static protected void CreateAndAddNew360RecorderDataElement()
         {
             //use existing data element to generate new element
@@ -511,7 +650,7 @@ namespace FuzzPhyte.Recorder.Editor
                     FPWildCards.TAKE
                 };
 
-                var dataItem = settingsData.CreateImageSequence360PNG(2048, 4096, ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageRecorderSettings.EXRCompressionType.Zip, newList);
+                var dataItem = settingsData.CreateImageSequence360PNG(2048, 4096, ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageSource.TaggedCamera,ImageRecorderSettings.EXRCompressionType.Zip, newList, FP_RecorderUtility.CamTAG);
                 dataItem.RecorderName = "FP_360Setup" + "_"+(settingsData.RecorderData.Count+1).ToString();
                 //update name by one value
                 
@@ -528,6 +667,7 @@ namespace FuzzPhyte.Recorder.Editor
                 Debug.LogError($"Missing a reference to settingsData!");
             }
         }
+        
         /// <summary>
         /// Adds our data to the actual recorder window
         /// </summary>
@@ -614,10 +754,28 @@ namespace FuzzPhyte.Recorder.Editor
                     //try now reading it back into Unity?
                     TheRecorderSettingsJSON = content;
                     var anyErrors = ReadEditorPrefsJSON();
-
+                    //setup our tags to match if we need more
+                    
                     if (!anyErrors)
                     {
+
                         HaveRecorderSettings = true;
+                        //match tags
+                        var curCountSize = settings.RecorderSettings.Count();
+
+                        if (NumberCameraTags<curCountSize)
+                        {
+                            //increase number camera tags
+                            var diff = curCountSize - NumberCameraTags;
+                            if (diff > 0)
+                            {
+                                Debug.Log($"Adding more Tags as it looks like we need {diff} additional tags based on the data we are loading");
+                                AddNumberTags(diff, false);
+                            }
+                        }
+                        //we need to now spawn the gameobjects based on this data
+                        GenerateGameObject(curCountSize, "FPCamera", FP_RecorderUtility.CamTAG);
+                        
                         var someWindow = (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
                         //someWindow.
                         someWindow.SetRecorderControllerSettings(settings);
@@ -640,9 +798,8 @@ namespace FuzzPhyte.Recorder.Editor
                 Debug.LogError($"Make sure you have a TextAsset selected-when loading from the backup!");
             }
         }
-        
         #endregion
-        [MenuItem(RecordTakeOutputFile, priority =FP_UtilityData.ORDER_SUBMENU_LVL2)]
+        [MenuItem(RecordTakeOutputFile, priority =FP_UtilityData.ORDER_SUBMENU_LVL1)]
         static protected void GenerateOutputFileRecorderTake()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT4);
@@ -654,6 +811,11 @@ namespace FuzzPhyte.Recorder.Editor
             };
             var asset = FP_OutputFileSO.CreateInstance(_cards, UnityEditor.Recorder.OutputPath.Root.AssetsFolder);
             CreateAssetAt(asset, assetPath);
+        }
+        [MenuItem(RecordTakeOutputFile, true)]
+        static bool OutputFileRecorderTake()
+        {
+            return RecorderEnabled;
         }
         [MenuItem(CGenericConfigMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL3+1)]
         static protected void GenerateRecorderConfiguration()
@@ -681,7 +843,6 @@ namespace FuzzPhyte.Recorder.Editor
             // Optionally, log the creation
             Debug.Log("ExampleAsset created at " + assetPath);
         }
-
         [MenuItem(C360ConfigMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL3)]
         static protected void Generate360Configuration()
         {

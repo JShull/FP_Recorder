@@ -256,6 +256,7 @@ namespace FuzzPhyte.Recorder.Editor
             return RecList;
         }
         #endregion
+
         public (RecorderControllerSettings,bool) GenerateRecorderControllerSettingsForUnity(out string messages)
         {
             messages = "";
@@ -266,6 +267,7 @@ namespace FuzzPhyte.Recorder.Editor
             rcs.FrameRate = FrameRate;
             rcs.FrameRatePlayback = Playback;
             var recorderSettingsList = ReturnUnityRecorderByData();
+            
             switch (RecordMode)
             {
                 case RecordMode.Manual:
@@ -283,10 +285,6 @@ namespace FuzzPhyte.Recorder.Editor
             
             try
             {
-
-                
-
-                
                 bool listGood = false;
                 if (recorderSettingsList.Count ==0)
                 {
@@ -331,7 +329,7 @@ namespace FuzzPhyte.Recorder.Editor
         /// <param name="renderStereo"></param>
         /// <param name="flip"></param>
         /// <returns></returns>
-        public FPRecorderDataStruct CreateImageSequence360PNG(int height, int width, ImageRecorderSettings.ImageRecorderOutputFormat imgFormat, ImageRecorderSettings.EXRCompressionType compType, List<FPWildCards> wCards, string camTag = "MainCamera", bool renderStereo = false, bool flip = false)
+        public FPRecorderDataStruct CreateImageSequence360PNG(int height, int width, ImageRecorderSettings.ImageRecorderOutputFormat imgFormat, ImageSource imgSource,ImageRecorderSettings.EXRCompressionType compType, List<FPWildCards> wCards, string camTag = "MainCamera", bool renderStereo = false, bool flip = false)
         {
             var newDataStruct = new FPRecorderDataStruct();
             //set our classifiers
@@ -346,6 +344,7 @@ namespace FuzzPhyte.Recorder.Editor
             inputSettings.OutputWidth = width;
             inputSettings.RenderStereo = renderStereo;
             inputSettings.FlipFinalOutput = flip;
+            inputSettings.Source = imgSource;
             inputSettings.CameraTag = camTag;
             //output format
             outputFormat.OutputFormat = imgFormat;
