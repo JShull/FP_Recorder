@@ -1,16 +1,13 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Recorder.Input;
 using FuzzPhyte.Utility;
 using FuzzPhyte.Utility.Editor;
-using UnityEngine.WSA;
-using UnityEditor.VersionControl;
-using static UnityEngine.Experimental.Rendering.RayTracingAccelerationStructure;
 using UnityEditor.Recorder;
-using NUnit.Framework;
-//using System;
+using System.IO;
+using System;
+using System.Text;
 
 namespace FuzzPhyte.Recorder.Editor
 {
@@ -26,14 +23,16 @@ namespace FuzzPhyte.Recorder.Editor
         //
         private const string CustomMenuBasePath = FP_UtilityData.MENU_COMPANY+"/"+FP_RecorderUtility.PRODUCT_NAME;
         private const string SetupMenuBase = FP_UtilityData.MENU_COMPANY + "/" + FP_RecorderUtility.PRODUCT_NAME + "/Setup";
-        private const string SetupAddTenCameras = SetupMenuBase + "/Generate Ten CameraTags";
-        private const string SetupAddFiveCameras = SetupMenuBase + "/Generate Five CameraTags";
-        private const string SetupRemoveTenCameras = SetupMenuBase + "/Remove Ten CameraTags";
-        private const string SetupRemoveFiveCameras = SetupMenuBase + "/Remove Five CameraTags";
+        private const string SetupAddTenCameras = SetupMenuBase + "/Tags/Generate Ten CameraTags";
+        private const string SetupAddFiveCameras = SetupMenuBase + "/Tags/Generate Five CameraTags";
+        private const string SetupRemoveTenCameras = SetupMenuBase + "/Tags/Remove Ten CameraTags";
+        private const string SetupRemoveFiveCameras = SetupMenuBase + "/Tags/Remove Five CameraTags";
         //
-        private const string LoadRecorderFromData = SetupMenuBase + "/Load from Data";
-        private const string RemoveAllFPCameras = SetupMenuBase + "/Reset All FPCameraTags";
-        private const string ResetAllEditorData = SetupMenuBase + "/Reset All Editor DATA";
+        private const string LoadRecorderFromData = SetupMenuBase + "/Data/Load from Editor";
+        private const string WriteBackupJSON = SetupMenuBase + "/Data/Save JSON Backup";
+        private const string ReadBackupJSON = SetupMenuBase + "/Data/Read JSON Backup";
+        private const string RemoveAllFPCameras = SetupMenuBase + "/Reset/Reset All FPCameraTags";
+        private const string ResetAllEditorData = SetupMenuBase + "/Reset/Reset All Editor DATA";
         //
         private const string OutputFormat = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT3;
         private const string InputFile = CustomMenuBasePath + "/Create " + FP_RecorderUtility.CAT2;
@@ -381,58 +380,17 @@ namespace FuzzPhyte.Recorder.Editor
         }
         #endregion
         #region New Data Menu Items
-        //runs once when the editor is loaded and we check to see if it already exists in JSON
-        //called from another script
-        public static void SetupSettingsFileOnBoot()
+        /// <summary>
+        /// Checks to see if we have recorder settings
+        /// if we do we try to load it and serialize/deserialize it from that JSON format
+        /// </summary>
+        [MenuItem(LoadRecorderFromData, priority = FP_UtilityData.ORDER_SUBMENU_LVL5 + 8)]
+        protected static void HaveJSONRecorderSettings()
         {
             if (HaveRecorderSettings)
             {
-                Debug.Log($"String message that should be maybe JSON BEGINS HERE| {TheRecorderSettingsJSON}");
-                //need to bring the file into my data
-                settingsData = JsonUtility.FromJson<FPRecorderSettingsJSON>(TheRecorderSettingsJSON);
-                Debug.LogWarning($"Found that we might have some settings in the EditorPrefs, but we need to load them from the JSON");
-                string returnMessages = "";
-                Debug.LogWarning($"Settings Data Notes Before: {settingsData.RecorderNotes}");
-                bool anyErrors = false;
-                try
-                {
-                    
-                    var settingsDataReturn = settingsData.GenerateRecorderControllerSettingsForUnity(out returnMessages);
-                    Debug.LogWarning($"Messages Returned:{returnMessages}");
-                    if (settingsDataReturn.Item2)
-                    {
-                        settings = settingsDataReturn.Item1;
-                        //try to load it into the editor
-                        Debug.LogWarning($"File appears loaded correctly. Going to try and populate the recoder!");
-                        
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"Our Settings File contained not enough information, need to manually build it and/or look into something...");
-                        settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
-                        settings.ExitPlayMode = settingsData.ExitPlayMode;
-                        settings.CapFrameRate = settingsData.CapFPS;
-                        settings.FrameRate = settingsData.FrameRate;
-                        settings.FrameRatePlayback = settingsData.Playback;
-                        
-                        if (settingsDataReturn.Item1 != null)
-                        {
-                            settings = settingsDataReturn.Item1;
-                            Debug.LogWarning($"Rebuilt the file: assigned settings to the data we passed back, going to try and populate the recoder!");
-                            
-                        }
-                        else
-                        {
-                            Debug.LogWarning($"Return was null!");
-                        }
-                        
-                    }
-                } catch (System.Exception ex)
-                {
-                    Debug.LogWarning($"Error: {ex.Message}| Running 'SetupSettingsFileOnBoot");
-                    anyErrors = true;
+                var anyErrors = ReadEditorPrefsJSON();
 
-                }
                 if (!anyErrors)
                 {
                     var someWindow = (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
@@ -441,10 +399,6 @@ namespace FuzzPhyte.Recorder.Editor
                 }
                 Debug.LogWarning($"Settings Data Outcome after FileOnBoot {settingsData.RecorderNotes}");
                 
-                
-
-                //settings = JsonUtility.FromJson<RecorderControllerSettings>(TheRecorderSettingsJSON);
-                //we have something in the editorprefs, but we need to load it from the JSON
             }
             else
             {
@@ -455,8 +409,6 @@ namespace FuzzPhyte.Recorder.Editor
                 //need to generate a blank 
                 //save the settings as json and store them to my editerprefs
                 TheRecorderSettingsJSON = JsonUtility.ToJson(settingsData);
-
-
                 settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
                 settings.ExitPlayMode = settingsData.ExitPlayMode;
                 settings.CapFrameRate = settingsData.CapFPS;
@@ -466,13 +418,60 @@ namespace FuzzPhyte.Recorder.Editor
             }
 
         }
-        [MenuItem(LoadRecorderFromData,priority = FP_UtilityData.ORDER_SUBMENU_LVL5+8)]
-        static protected void LoadFromData()
+        /// <summary>
+        /// Works around settingsData requirements
+        /// Uses the EditerPrefs to load 'TheRecorderSettingsJSON'
+        /// </summary>
+        /// <returns></returns>
+        static protected bool ReadEditorPrefsJSON()
         {
-            SetupSettingsFileOnBoot();
-        }
+            Debug.Log($"String message that should be maybe JSON BEGINS HERE| {TheRecorderSettingsJSON}");
+            //need to bring the file into my data
+            settingsData = JsonUtility.FromJson<FPRecorderSettingsJSON>(TheRecorderSettingsJSON);
+            Debug.LogWarning($"Found that we might have some settings in the EditorPrefs, but we need to load them from the JSON");
+            string returnMessages = "";
+            Debug.LogWarning($"Settings Data Notes Before: {settingsData.RecorderNotes}");
+            bool anyErrors = false;
+            try
+            {
+                var settingsDataReturn = settingsData.GenerateRecorderControllerSettingsForUnity(out returnMessages);
+                Debug.LogWarning($"Messages Returned:{returnMessages}");
+                if (settingsDataReturn.Item2)
+                {
+                    settings = settingsDataReturn.Item1;
+                    //try to load it into the editor
+                    Debug.LogWarning($"File appears loaded correctly. Going to try and populate the recoder!");
+
+                }
+                else
+                {
+                    Debug.LogWarning($"Our Settings File contained not enough information, need to manually build it and/or look into something...");
+                    settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
+                    settings.ExitPlayMode = settingsData.ExitPlayMode;
+                    settings.CapFrameRate = settingsData.CapFPS;
+                    settings.FrameRate = settingsData.FrameRate;
+                    settings.FrameRatePlayback = settingsData.Playback;
+                    if (settingsDataReturn.Item1 != null)
+                    {
+                        settings = settingsDataReturn.Item1;
+                        Debug.LogWarning($"Rebuilt the file: assigned settings to the data we passed back, going to try and populate the recoder!");
+
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Return was null!");
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"Error: {ex.Message}| Running 'SetupSettingsFileOnBoot");
+                anyErrors = true;
+            }
+            return anyErrors;
+        }  
         [MenuItem(ResetAllEditorData,priority = FP_UtilityData.ORDER_SUBMENU_LVL4 + 6)]
-        static protected void ResetData()
+        static protected void ResetDataMenu()
         {
             settingsData = new FPRecorderSettingsJSON(RecordMode.SingleFrame, 1, true, true);
 
@@ -529,6 +528,9 @@ namespace FuzzPhyte.Recorder.Editor
                 Debug.LogError($"Missing a reference to settingsData!");
             }
         }
+        /// <summary>
+        /// Adds our data to the actual recorder window
+        /// </summary>
         static protected void AddFPRecorderDataToRecorderWindow()
         {
             //going from settingsData to settings to then the window
@@ -555,8 +557,90 @@ namespace FuzzPhyte.Recorder.Editor
             //someWindow.
             someWindow.SetRecorderControllerSettings(settings);
         }
+        [MenuItem(WriteBackupJSON, priority = FP_UtilityData.ORDER_SUBMENU_LVL5 + 9)]
+        static protected void WriteJSONToLocalFile()
+        {
+            var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.BACKUP);
+            var jsonAsset = TheRecorderSettingsJSON;
+            //var asset = AnimationClipRecorder.CreateInstance(true, true, AnimationInputSettings.CurveSimplificationOptions.Lossless);
+            string backupFile = "/FPBackup_"+System.DateTime.Now.ToString("yyyyMMdd_hhmm") +".json";
+            string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2+backupFile);
+            
+            //FileStream file = File.Create(assetPath);
+            //create the asset
+            try
+            {
+                // Create a FileStream to write to the file, it will create the file if it does not exist, or overwrite it if it does.
+                using (FileStream fileStream = new FileStream(assetPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+                {
+                    // Create a StreamWriter to write text to the file, using UTF8 encoding
+                    using (StreamWriter writer = new StreamWriter(fileStream))
+                    {
+                        // Write text to the file
+                        writer.Write(jsonAsset);
+                    } // StreamWriter is automatically flushed and closed here
+                } // FileStream is automatically closed here
 
+                Debug.Log($"Backup file generated at {assetPath}");
+            }
+            catch (Exception ex)
+            {
+                // If an error occurs, display the message
+               Debug.LogError("An error occurred while writing the backup file: " + ex.Message);
+            }
 
+        }
+        [MenuItem(ReadBackupJSON, priority = FP_UtilityData.ORDER_SUBMENU_LVL5 + 8)]
+        static protected void ReadJSONFromLocalSelectedFileMenu()
+        {
+            var data = Selection.activeObject as TextAsset;
+
+            if (data != null)
+            {
+                var assetPath = AssetDatabase.GetAssetPath(data.GetInstanceID());
+                //find path of selected object
+                try
+                {
+                    string content = string.Empty;
+                    using (FileStream fileStream = new FileStream(assetPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                    {
+                        using (StreamReader reader = new StreamReader(fileStream, Encoding.UTF8))
+                        {
+                            // Read the entire file content
+                            content = reader.ReadToEnd();
+                        } 
+                    } 
+                    Debug.Log($"Found the backup file and read it in from {assetPath}.");
+                    //try now reading it back into Unity?
+                    TheRecorderSettingsJSON = content;
+                    var anyErrors = ReadEditorPrefsJSON();
+
+                    if (!anyErrors)
+                    {
+                        HaveRecorderSettings = true;
+                        var someWindow = (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
+                        //someWindow.
+                        someWindow.SetRecorderControllerSettings(settings);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // If an error occurs, display the message
+                    Debug.LogError($"An error occurred while attempting to read the backup file at {assetPath}: " + ex.Message);
+                }
+
+                //var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.BACKUP);
+                //var jsonAsset = TheRecorderSettingsJSON;
+                //var asset = AnimationClipRecorder.CreateInstance(true, true, AnimationInputSettings.CurveSimplificationOptions.Lossless);
+                //string backupFile = "/FPBackup_" + System.DateTime.Now.ToString("yyyyMMdd_hhmm") + ".json";
+                //string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + backupFile);
+            }
+            else
+            {
+                Debug.LogError($"Make sure you have a TextAsset selected-when loading from the backup!");
+            }
+        }
+        
         #endregion
         [MenuItem(RecordTakeOutputFile, priority =FP_UtilityData.ORDER_SUBMENU_LVL2)]
         static protected void GenerateOutputFileRecorderTake()
@@ -653,6 +737,7 @@ namespace FuzzPhyte.Recorder.Editor
             // Optionally, log the creation
             Debug.Log("ExampleAsset created at " + assetPath);
         }
+
         #region REPLACING OLD MENU STUFF For EASY BUTTON
         //[MenuItem(CreateAndAdd360RecorderToRecorderSettings,priority = FP_UtilityData.ORDER_SUBMENU_LVL3+5)]
         static protected void CreateAndAdd360Recorder()
@@ -805,7 +890,7 @@ namespace FuzzPhyte.Recorder.Editor
         /// </summary>
         /// <param name="myScriptableObject"></param>
         /// <returns></returns>
-        private static bool RemoveScriptableObjectMemoryGenerated(Object myScriptableObject)
+        private static bool RemoveScriptableObjectMemoryGenerated(UnityEngine.Object myScriptableObject)
         {
             string assetPath = AssetDatabase.GetAssetPath(myScriptableObject);
             bool result = AssetDatabase.DeleteAsset(assetPath);
@@ -852,7 +937,7 @@ namespace FuzzPhyte.Recorder.Editor
         /// </summary>
         /// <param name="asset"></param>
         /// <param name="assetPath"></param>
-        static protected void CreateAssetAt(Object asset, string assetPath)
+        static protected void CreateAssetAt(UnityEngine.Object asset, string assetPath)
         {
             // Create the asset
             AssetDatabase.CreateAsset(asset, assetPath);

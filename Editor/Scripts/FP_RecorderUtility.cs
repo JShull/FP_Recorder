@@ -16,6 +16,7 @@ namespace FuzzPhyte.Recorder.Editor
         public const string CAT3 = "OutputFormat";
         public const string CAT4 = "OutputFile";
         public const string CAT5 = "AddedRecorder";
+        public const string BACKUP = "DataBackup";
         public const string SAMPLESPATH = "Assets/" + PRODUCT_NAME + "/Samples/URPSamples";
         public const string CamTAG = "FPCameraTag_";
         
