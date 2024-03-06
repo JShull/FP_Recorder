@@ -370,9 +370,8 @@ namespace FuzzPhyte.Recorder.Editor
         /// <param name="cameraData"></param>
         public bool AddCameraData(GameObject cameraData)
         {
-            var fooCars = CameraPlacements.Select(c => c.Tag == cameraData.tag);
             int index = CameraPlacements.FindIndex(item => item.Tag == cameraData.tag);
-            if (index != -1)
+            if (index == -1)
             {
                 //add it
                 FPTransformStruct newData = new FPTransformStruct()

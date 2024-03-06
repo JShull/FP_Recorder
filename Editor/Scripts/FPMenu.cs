@@ -755,11 +755,14 @@ namespace FuzzPhyte.Recorder.Editor
             //    NumberCameraTags
             for (int i = 0; i < NumberCameraTags; i++)
             {
+
                 var searchTag = FP_RecorderUtility.CamTAG + i.ToString();
+                Debug.Log($"Searching for a camera with tag{searchTag}");
                 var allFoundItem = GameObject.FindGameObjectWithTag(searchTag);
                 if (allFoundItem != null)
                 {
                     //throw it at my list
+                    Debug.Log($"Found it, {allFoundItem.name}");
                     settingsData.AddCameraData(allFoundItem);
                 }
             }
@@ -773,6 +776,8 @@ namespace FuzzPhyte.Recorder.Editor
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.BACKUP);
             //sync my camera data
             SaveCameraPositions();
+            //save my data
+            TheRecorderSettingsJSON = JsonUtility.ToJson(settingsData);
             var jsonAsset = TheRecorderSettingsJSON;
             //var asset = AnimationClipRecorder.CreateInstance(true, true, AnimationInputSettings.CurveSimplificationOptions.Lossless);
             string backupFile = "/FPBackup_"+System.DateTime.Now.ToString("yyyyMMdd_hhmm") +".json";
