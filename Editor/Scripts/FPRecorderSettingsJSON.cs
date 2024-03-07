@@ -28,6 +28,9 @@ namespace FuzzPhyte.Recorder.Editor
         public bool CapFPS = true;
         public bool ExitPlayMode = true;
         public string RecorderNotes;
+        //Int holding the: UnityEngine.Rendering.Universal.UniversalAdditionalCameraData.SetRenderer
+        //default renderer by pipeline is set to -1
+        public int RendererIndex=-1;
         public List<FPRecorderDataStruct> RecorderData = new List<FPRecorderDataStruct>();
         public List<FPTransformStruct> CameraPlacements = new List<FPTransformStruct>();
         /// <summary>
@@ -38,8 +41,9 @@ namespace FuzzPhyte.Recorder.Editor
         /// <param name="startIntervalFrame"></param>
         /// <param name="endIntervalFrame"></param>
         /// <param name="capFPS"></param>
-        public FPRecorderSettingsJSON(RecordMode recMode,int targetFrame,int startIntervalFrame,int endIntervalFrame, float fps, FrameRatePlayback playback, bool capFPS,bool exitPlayMode=true)
+        public FPRecorderSettingsJSON(RecordMode recMode,int targetFrame,int startIntervalFrame,int endIntervalFrame, float fps, FrameRatePlayback playback, bool capFPS,int rendIndex=-1,bool exitPlayMode=true)
         {
+            RendererIndex = rendIndex;
             RecordMode = recMode;
             Playback = playback;
             if(RecordMode != RecordMode.FrameInterval)
@@ -74,10 +78,11 @@ namespace FuzzPhyte.Recorder.Editor
         /// <param name="startTimeInterval"></param>
         /// <param name="endTimeInterval"></param>
         /// <param name="capFPS"></param>
-        public FPRecorderSettingsJSON(RecordMode recMode,int targetFrame,float startTimeInterval, float endTimeInterval, float fps, FrameRatePlayback playback,bool capFPS,bool exitPlayMode=true)
+        public FPRecorderSettingsJSON(RecordMode recMode, int targetFrame, float startTimeInterval, float endTimeInterval, float fps, FrameRatePlayback playback, bool capFPS, int rendIndex = -1, bool exitPlayMode=true)
         {
             RecordMode = recMode;
             Playback = playback;
+            RendererIndex = rendIndex;
             if (RecordMode != RecordMode.TimeInterval)
             {
                 //we passed frame information but aren't using frame interval
@@ -103,9 +108,10 @@ namespace FuzzPhyte.Recorder.Editor
             EndTimeInterval = endTimeInterval;
             CapFPS = capFPS;
         }
-        public FPRecorderSettingsJSON(RecordMode recMode, int singleFrame,bool capFPS, bool exitPlayMode=true)
+        public FPRecorderSettingsJSON(RecordMode recMode, int singleFrame, bool capFPS, int rendIndex = -1, bool exitPlayMode=true)
         {
             RecordMode = recMode;
+            RendererIndex = rendIndex;
             Playback = FrameRatePlayback.Constant;
             if (RecordMode != RecordMode.SingleFrame)
             {

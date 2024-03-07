@@ -9,14 +9,14 @@ using System.IO;
 
 namespace FuzzPhyte.Recorder.Editor
 {
-    //[MenuItem("")]
+    /// <summary>
+    /// Wrapper class that holds relative data associated with 'OutputPath' for the UnityEditor.Recorder
+    /// </summary>
     [CreateAssetMenu(fileName = "CameraOutputData", menuName = FuzzPhyte.Utility.FP_UtilityData.MENU_COMPANY+"/"+FP_RecorderUtility.PRODUCT_NAME+"/"+FP_RecorderUtility.CAT4+"/"+"/CamOutputData")]
     [Serializable]
     public class FP_OutputFileSO : ScriptableObject
     {
-        //public CreateAssetMenuAttribute MenuTest;
-        //this would go on an actual editor script
-        
+        //Holds value for path/file associated with the OutputPath
         public string FileName;
         public List<FPWildCards> WildCardsV;
         public OutputPath OutputPath;
@@ -26,7 +26,7 @@ namespace FuzzPhyte.Recorder.Editor
             for (int i = 0; i < WildCardsV.Count; i++)
             {
                 var curCard = WildCardsV[i];
-                string wCard = RecorderPlaceholders.GetWildCardString(curCard);
+                string wCard = FP_RecorderUtility.GetWildCardString(curCard);
 
                 if (i == 0)
                 {
@@ -39,7 +39,6 @@ namespace FuzzPhyte.Recorder.Editor
             }
             var mediaOutputFolder = Path.Combine(Application.dataPath,"Recordings/"+FileName);
             FileName = mediaOutputFolder;
-            //OutputPath.Equals(OutputPath.Root.AssetsFolder);
         }
         public void Init(List<FPWildCards>wCards, OutputPath.Root anOutput)
         {
@@ -63,7 +62,6 @@ namespace FuzzPhyte.Recorder.Editor
             var data = ScriptableObject.CreateInstance<FP_OutputFileSO>();
             data.Init(wildCards,anOutputPath);
             return data;
-
         }
 
 

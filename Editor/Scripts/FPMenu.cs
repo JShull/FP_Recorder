@@ -11,6 +11,9 @@ using System.Text;
 using System.Linq;
 namespace FuzzPhyte.Recorder.Editor
 {
+    /// <summary>
+    /// Main class that assigns and aligns data between UnityEditor.Recorder and UnityEditor.Prefs and our JSON backup
+    /// </summary>
     public class FPMenu : MonoBehaviour, IFPProductEditorUtility
     {
         //LOCAL CACHED SERIALIZABLE DATA FILES
@@ -429,7 +432,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             //check if we have the right amount of tags to manage this
             //we are going to add some cameras - when we do this we are going to increase the # we are tracking
-            GenerateGameObject(5, "FPCamera", FP_RecorderUtility.CamTAG);
+            GenerateGameObject(5, "FPCamera", FP_RecorderUtility.CamTAG,settingsData.RendererIndex);
             //we need to now back that number out to reset our starting number for the data files themselves
             var startingNumberTag = NumberCamerasInScene - 5;
             New360RecorderDataCount(5, FP_RecorderUtility.CamTAG,startingNumberTag);
@@ -439,7 +442,7 @@ namespace FuzzPhyte.Recorder.Editor
         /// </summary>
         /// <param name="transformData"></param>
         /// <param name="baseName"></param>
-        static void GenerateGameObjectFromDataList(List<FPTransformStruct>transformData,string baseName)
+        static void GenerateGameObjectFromDataList(List<FPTransformStruct>transformData,string baseName, int rendererIndex=-1)
         {
             var currentCamsInScene = NumberCamerasInScene;
             var endCamsInScene = NumberCamerasInScene + transformData.Count;
@@ -465,7 +468,7 @@ namespace FuzzPhyte.Recorder.Editor
                 var dataObj = transformData[i];
 
                 newObj.name = dataObj.Name;
-                cameraData.GUIGameObjects.Add(newObj.name);
+                cameraData.GameObjectNames.Add(newObj.name);
 
 
                 newObj.tag = dataObj.Tag; // Assign the tag
@@ -475,7 +478,17 @@ namespace FuzzPhyte.Recorder.Editor
                 newObj.transform.SetParent(newParent.transform);
                 //newObj.transform.localPosition = new Vector3(0, yStartHeight, (i + 1) * 0.5f);
                 Camera newCam = newObj.AddComponent<Camera>(); // Add Camera component
+                                                               //set renderer here
+#if UNITY_PIPELINE_URP
+                var camData = newCam.gameObject.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
+                camData.SetRenderer(rendererIndex);
+#endif
+                //#if UNITY_PIPELINE_URP
+                //newCam.gameObject.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>()
+                //                
+                //#endif
                 UnityEngine.Object.DestroyImmediate(newObj.GetComponent<AudioListener>()); // Remove the Audio Listener
+
             }
             NumberCamerasInScene += numberToSpawn;
             //sync EditorPrefs cam data
@@ -491,7 +504,7 @@ namespace FuzzPhyte.Recorder.Editor
         /// <param name="baseName"></param>
         /// <param name="baseTag"></param>
         /// <param name="yStartHeight"></param>
-        static void GenerateGameObject(int numberToSpawn,string baseName, string baseTag, float yStartHeight=1.7f)
+        static void GenerateGameObject(int numberToSpawn,string baseName, string baseTag, int camIndex,float yStartHeight=1.7f)
         {
             var currentCamsInScene = NumberCamerasInScene;
             var endCamsInScene = NumberCamerasInScene + numberToSpawn;
@@ -515,13 +528,23 @@ namespace FuzzPhyte.Recorder.Editor
                 GameObject newObj = new GameObject();
                 int camTagNumber = currentCamsInScene + i;
                 newObj.name = baseName +"_"+i.ToString()+ "_" + camTagNumber.ToString(); // Unique name using GUID
-                cameraData.GUIGameObjects.Add(newObj.name);
+                cameraData.GameObjectNames.Add(newObj.name);
                 
 
                 newObj.tag = baseTag + camTagNumber.ToString(); // Assign the tag
                 newObj.transform.SetParent(newParent.transform);
                 newObj.transform.localPosition = new Vector3(0, yStartHeight, (i+1)*0.5f);
                 Camera newCam = newObj.AddComponent<Camera>(); // Add Camera component
+                                                               //update the renderer index
+
+#if UNITY_PIPELINE_URP
+                var camData = newCam.gameObject.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
+                if (camData != null)
+                {
+                    camData.SetRenderer(camIndex);
+                }
+                
+#endif
                 UnityEngine.Object.DestroyImmediate(newObj.GetComponent<AudioListener>()); // Remove the Audio Listener
             }
             NumberCamerasInScene += numberToSpawn;
@@ -562,7 +585,7 @@ namespace FuzzPhyte.Recorder.Editor
             //now lets use our data class and populate the entire recorder
             AddFPRecorderDataToRecorderWindow();
         }
-        #endregion
+#endregion
         #region New Data Menu Items
         /// <summary>
         /// Checks to see if we have recorder settings
@@ -589,7 +612,7 @@ namespace FuzzPhyte.Recorder.Editor
                 Debug.LogWarning($"No Settings file in the editorPrefs");
                 //need to generate my settingsData file
                 //single Frame Mode as a generic first one
-                settingsData = new FPRecorderSettingsJSON(RecordMode.SingleFrame, 1, true, true);
+                settingsData = new FPRecorderSettingsJSON(RecordMode.SingleFrame, 1, true, -1, true);
                 cameraData = new FPRecorderGOCams();
                 //need to generate a blank 
                 //save the settings as json and store them to my editerprefs
@@ -660,7 +683,7 @@ namespace FuzzPhyte.Recorder.Editor
         [MenuItem(ResetAllEditorData,priority = FP_UtilityData.ORDER_SUBMENU_LVL4 + 6)]
         static protected void ResetDataMenu()
         {
-            settingsData = new FPRecorderSettingsJSON(RecordMode.SingleFrame, 1, true, true);
+            settingsData = new FPRecorderSettingsJSON(RecordMode.SingleFrame, 1, true, -1,true);
             cameraData = new FPRecorderGOCams();
             TheCameraSettingsData = JsonUtility.ToJson(cameraData);
             NumberCamerasInScene = 0;
@@ -761,7 +784,9 @@ namespace FuzzPhyte.Recorder.Editor
                 var allFoundItem = GameObject.FindGameObjectWithTag(searchTag);
                 if (allFoundItem != null)
                 {
+                    //if it has a camera on it
                     //throw it at my list
+                    
                     Debug.Log($"Found it, {allFoundItem.name} with location at {allFoundItem.transform.position.x},{allFoundItem.transform.position.y},{allFoundItem.transform.position.z}");
                     var dataBack = settingsData.AddCameraData(allFoundItem);
                     Debug.Log($"Results of adding it to data?: {dataBack}");
@@ -852,7 +877,7 @@ namespace FuzzPhyte.Recorder.Editor
                             }
                         }
                         //we need to now spawn the gameobjects based on this data
-                        GenerateGameObjectFromDataList(settingsData.CameraPlacements, FP_RecorderUtility.BaseCamName);
+                        GenerateGameObjectFromDataList(settingsData.CameraPlacements, FP_RecorderUtility.BaseCamName,settingsData.RendererIndex);
                         //GenerateGameObject(curCountSize, FP_RecorderUtility.BaseCamName, FP_RecorderUtility.CamTAG);
                         
                         var someWindow = (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));

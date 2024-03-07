@@ -35,9 +35,45 @@ namespace FuzzPhyte.Recorder.Editor
         {
             return SAMPLESPATH;
         }
-       
+        #region WildCards
+        public const string AOV = "<AOV>";
+        public const string DATE = "<Date>";
+        public const string EXTENSION = "<Extension>";
+        public const string FRAME = "<Frame>";
+        public const string GAMEOBJECT = "<GameObject>";
+        public const string GAMEOBJECTSCENE = "<GameObjectScene>";
+        public const string PRODUCT = "<Product>";
+        public const string PROJECT = "<Project>";
+        public const string RECORDER = "<Recorder>";
+        public const string RESOLUTION = "<Resolution>";
+        public const string SCENE = "<Scene>";
+        public const string TAKE = "<Take>";
+        public const string TIME = "<Time>";
+
+        public static string GetWildCardString(FPWildCards wCard)
+        {
+            switch (wCard)
+            {
+                case FPWildCards.AOV: return AOV;
+                case FPWildCards.DATE: return DATE;
+                case FPWildCards.EXTENSION: return EXTENSION;
+                case FPWildCards.FRAME: return FRAME;
+                case FPWildCards.GAMEOBJECT: return GAMEOBJECT;
+                case FPWildCards.GAMEOBJECTSCENE: return GAMEOBJECTSCENE;
+                case FPWildCards.PRODUCT: return PRODUCT;
+                case FPWildCards.PROJECT: return PROJECT;
+                case FPWildCards.RECORDER: return RECORDER;
+                case FPWildCards.RESOLUTION: return RESOLUTION;
+                case FPWildCards.SCENE: return SCENE;
+                case FPWildCards.TIME: return TIME;
+                case FPWildCards.TAKE: return TAKE;
+                default: return TAKE;
+            }
+        }
+        #endregion
+
     }
-    
+
 
     /*
      * https://forum.unity.com/threads/control-unity-recorder-from-script.840946/
@@ -125,6 +161,7 @@ namespace FuzzPhyte.Recorder.Editor
         GifEncoder=3,
         NoEncoder=9,
     }
+    /*
     [Serializable]
     //https://docs.unity3d.com/Packages/com.unity.recorder@4.0/manual/OutputFileProperties.html#available-placeholders
     public static class RecorderPlaceholders
@@ -161,9 +198,8 @@ namespace FuzzPhyte.Recorder.Editor
                 case FPWildCards.TIME: return TIME;
                 case FPWildCards.TAKE: return TAKE;
                 default: return TAKE;
-
-
             }
         }
     }
+    */
 }

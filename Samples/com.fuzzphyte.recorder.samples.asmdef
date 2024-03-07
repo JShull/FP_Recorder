@@ -1,6 +1,6 @@
 {
     "name": "com.fuzzphyte.recorder.samples",
-    "rootNamespace": "",
+    "rootNamespace": "FuzzPhyte.Recorder.Samples",
     "references": [
         "GUID:3183f71cf2b4345369a861201a035db6"
     ],

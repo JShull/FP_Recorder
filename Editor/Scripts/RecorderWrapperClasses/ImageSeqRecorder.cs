@@ -4,14 +4,15 @@ using UnityEngine;
 using UnityEditor.Recorder;
 namespace FuzzPhyte.Recorder.Editor
 {
+    /// <summary>
+    /// Wrapper class for ImageRecorderSettings
+    /// </summary>
     [CreateAssetMenu(fileName = "OutputFormatImageSequence", menuName = FP_UtilityData.MENU_COMPANY + "/" + FP_RecorderUtility.PRODUCT_NAME + "/" + FP_RecorderUtility.CAT3 + "/ImageSeqType")]
     [Serializable]
     public class ImageSeqRecorder : FP_OutputFormatSO
     {
         public ImageRecorderSettings.ImageRecorderOutputFormat MediaFileFormat = ImageRecorderSettings.ImageRecorderOutputFormat.PNG;
-        //public FPMediaFileFormat MediaFileFormat = FPMediaFileFormat.PNG;
         public ImageRecorderSettings.EXRCompressionType Compression = ImageRecorderSettings.EXRCompressionType.Zip;
-        //public FPCompressionTypes Compression;
         [Range(1,100)]
         public int Quality;
 

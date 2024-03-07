@@ -1,17 +1,15 @@
 using System;
-using UnityEditor.Recorder.Input;
 using UnityEngine;
 
 namespace FuzzPhyte.Recorder.Editor
 {
-    //Base Class
+    /// <summary>
+    /// Base class for wrappers associated with the UnityEditor.Recorder Package
+    /// </summary>
     [Serializable]
     public abstract class FP_OutputFormatSO : ScriptableObject
     {
-        
         public bool EnabledRecorder = true;
         public FPEncoderType EncoderType;
-        //public abstract void Init(bool recordedHierarchy, bool clampedTangents, AnimationInputSettings.CurveSimplificationOptions cCompression, GameObject gObject = null);
-
     }
 }

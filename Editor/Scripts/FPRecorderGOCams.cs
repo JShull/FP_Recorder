@@ -4,14 +4,17 @@ using UnityEngine;
 using System;
 namespace FuzzPhyte.Recorder.Editor
 {
+    /// <summary>
+    /// Hold references to camera/gameobjects in scene
+    /// </summary>
     [Serializable]
     public class FPRecorderGOCams 
     {
-        public List<string> GUIGameObjects;
+        public List<string> GameObjectNames;
 
         public FPRecorderGOCams()
         {
-            GUIGameObjects = new List<string>();
+            GameObjectNames = new List<string>();
         }
     }
 }

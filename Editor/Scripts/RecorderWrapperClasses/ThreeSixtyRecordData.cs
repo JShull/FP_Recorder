@@ -5,6 +5,7 @@ using UnityEngine;
 
 namespace FuzzPhyte.Recorder.Editor
 {
+    //wrapper class to hold data for Camera360InputSettings
     [CreateAssetMenu(fileName = "InputCamera360", menuName = FP_UtilityData.MENU_COMPANY + "/" + FP_RecorderUtility.PRODUCT_NAME + "/" + FP_RecorderUtility.CAT2 + "/Cam360")]
     [Serializable]
     public class ThreeSixtyRecordData : FP_InputDataSO,IRecorderOutputFormat<Camera360InputSettings,GameObject>

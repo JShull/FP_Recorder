@@ -5,7 +5,9 @@ using UnityEngine;
 
 namespace FuzzPhyte.Recorder.Editor
 {
-
+    /// <summary>
+    /// Wrapper class for RenderTextureInputSettings
+    /// </summary>
     [CreateAssetMenu(fileName = "InputRenderTextureAsset", menuName = FP_UtilityData.MENU_COMPANY + "/" + FP_RecorderUtility.PRODUCT_NAME + "/" + FP_RecorderUtility.CAT2 + "/RenderTexture")]
     [Serializable]
     public class FPRenderTextureRecordData : FP_InputDataSO, IRecorderOutputFormat<RenderTextureInputSettings,RenderTexture>

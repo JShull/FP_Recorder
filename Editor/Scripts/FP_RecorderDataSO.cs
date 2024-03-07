@@ -5,14 +5,14 @@ namespace FuzzPhyte.Recorder.Editor
 {
     
     [CreateAssetMenuAttribute(menuName = FP_UtilityData.MENU_COMPANY + "/ARecorder",order =10)]
-    //[UnityEditor.MenuItem("ScriptableObjects/Category/Special/MyObject")]
     [Serializable]
     public class FP_RecorderDataSO : ScriptableObject
     {
         public FP_Camera CameraData;
-
-
-        //public UnityEditor.Recorder.
+        /*
+     * UnityEngine.Rendering.Universal.UniversalAdditionalCameraData additionalCameraData = cam.transform.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
+       additionalCameraData.SetRenderer(newIndex);
+     * */
         public string RecorderName;
         [Space]
         [Header("Recorder Configuration Files")]

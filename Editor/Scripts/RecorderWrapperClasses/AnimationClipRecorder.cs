@@ -5,17 +5,16 @@ using UnityEngine;
 using UnityEditor.Recorder.Input;
 namespace FuzzPhyte.Recorder.Editor
 {
+    /// <summary>
+    /// Wrapper class for AnimationClip
+    /// </summary>
     [CreateAssetMenu(fileName = "OutputFormatAnimationClip", menuName = FP_UtilityData.MENU_COMPANY + "/" + FP_RecorderUtility.PRODUCT_NAME + "/" + FP_RecorderUtility.CAT3 + "/AnimationClip")]
     [Serializable]
     public class AnimationClipRecorder : FP_InputDataSO, IRecorderOutputFormat<AnimationRecorderSettings,GameObject>
     {
-        //note: will need the gameobject to be given to us on the editor script side
-        //doesn't make sense to add that here
         public bool RecordedHierarchy=true;
         public bool ClampedTangents=true;
-        //public FPAnimationCompression AnimCompression;
         public AnimationInputSettings.CurveSimplificationOptions AnimCompresion;
-        //public UnityEditor.Recorder.Input.AnimationInputSettings AnimSettings;
         public AnimationRecorderSettings ReturnUnityOutputFormat(GameObject animData)
         {
             var newAnimRecordSettings = new AnimationRecorderSettings();
