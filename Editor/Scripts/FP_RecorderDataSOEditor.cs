@@ -37,7 +37,7 @@ namespace FuzzPhyte.Recorder.Editor
             
             if (GUILayout.Button($"Add {scriptableObject.NumberOfCameras} Cameras to the Recorder?"))
             {
-
+                FPMenu.PassFullConfigurationFileFromSO(scriptableObject);
             }
             EditorGUILayout.Space(20);
             EditorGUILayout.LabelField("**CAUTION**", deleteFilesButtonStyle);

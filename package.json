@@ -2,7 +2,7 @@
     "name": "com.fuzzphyte.recorder",
     "version": "0.1.0",
     "displayName": "FP Recorder",
-    "description": "FP Recorder is a set of editor based scripts to help capture content from the Unity Recorder Class that utilizes a scriptable object to setup your recorder needs - designed to be built around data.",
+    "description": "FP Recorder is a set of editor based scripts to help capture content from the Unity Recorder Class that utilizes a suite of Unity Editor scripts, scriptable objects, and JSON serialization to easily configure and remember your UnityEditor.Recorder Needs - designed to be built around data.",
     "unity": "2022.3",
     "unityRelease": "20f1",
     "documentationUrl": "https://github.com/jshull/FP_Recorder/README.md",
@@ -10,24 +10,26 @@
     "licensesUrl": "https://github.com/jshull/FP_Recorder/LICENSE.md",
     "repository": {
       "type": "git",
-      "url": "https://github.com/jshull/FP_Control.git"
+      "url": "https://github.com/jshull/FP_Recorder.git"
     },
     "dependencies": {
-      "com.unity.mathematics": "1.2.6",
-      "com.unity.recorder": "4.0.2"
+        "com.unity.mathematics": "1.2.6",
+        "com.fuzzphyte.utility": "https://github.com/jshull/FP_Utility.git",
+        "com.fuzzphyte.utility.editor": "https://github.com/jshull/FP_Utility.git",
+        "com.unity.recorder": "4.0.2"
     },
     "samples": [
       {
-        "displayName": "URP Monobehaviour Example",
-        "description": "Includes a couple different scriptable object examples",
+        "displayName": "UnityEditor.Recorder data examples",
+        "description": "Includes a couple different scriptable object examples and folders",
         "path": "Samples~/URPSamples"
       }
     ],
     "keywords": [
-      "ScriptableObject",
-      "Character Controller",
-      "3D",
-      "Recorder"
+        "ScriptableObject",
+        "UnityEditor",
+        "3D",
+        "Recorder"
     ],
     "author": {
       "name": "John Shull",

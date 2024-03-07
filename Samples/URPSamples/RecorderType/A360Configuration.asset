@@ -25,8 +25,8 @@ MonoBehaviour:
     StepsPerSegment: 0
   RecorderName: FP_Generated_ImgSeqTest
   RecorderType: 2
-  InputFormatData: {fileID: 11400000, guid: 7a829b09d35f24eb9ac6d8d86a8921b6, type: 2}
-  OutputFormatData: {fileID: 11400000, guid: 38ac06dc1cfbb460baecb013db7f2957, type: 2}
-  OutputCameraData: {fileID: 11400000, guid: c2fd85c4a6d9e40b0bc377411ef766bc, type: 2}
-  NumberOfCameras: 1
+  InputFormatData: {fileID: 11400000, guid: 733fde5a1e2df47ca8e09ebb45f080c5, type: 2}
+  OutputFormatData: {fileID: 0}
+  OutputCameraData: {fileID: 0}
+  NumberOfCameras: 5
   AnimationClipGameObject: {fileID: 0}

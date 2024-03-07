@@ -23,7 +23,7 @@ MonoBehaviour:
         m_CustomAspectX: 1
         m_CustomAspectY: 1
         m_ImageAspect: 1
-    source: 2
+    source: 4
     cameraTag: 
     flipFinalOutput: 0
     captureUI: 0

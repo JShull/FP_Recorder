@@ -368,7 +368,7 @@ namespace FuzzPhyte.Recorder.Editor
         /// Convert a GameObject to our Serialized struct
         /// </summary>
         /// <param name="cameraData"></param>
-        public bool AddCameraData(GameObject cameraData)
+        public string AddCameraData(GameObject cameraData)
         {
             int index = CameraPlacements.FindIndex(item => item.Tag == cameraData.tag);
             if (index == -1)
@@ -382,11 +382,11 @@ namespace FuzzPhyte.Recorder.Editor
                     Name = cameraData.name,
                 };
                 CameraPlacements.Add(newData);
-                return true;
+                return $"{cameraData.tag} index was -1, added it!";
             }
             else
             {
-                return false;
+                return $"{cameraData.tag} index was {index} and didn't add it";
             }
             
         }

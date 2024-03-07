@@ -757,13 +757,14 @@ namespace FuzzPhyte.Recorder.Editor
             {
 
                 var searchTag = FP_RecorderUtility.CamTAG + i.ToString();
-                Debug.Log($"Searching for a camera with tag{searchTag}");
+                Debug.Log($"Searching for a camera with tag {searchTag}");
                 var allFoundItem = GameObject.FindGameObjectWithTag(searchTag);
                 if (allFoundItem != null)
                 {
                     //throw it at my list
-                    Debug.Log($"Found it, {allFoundItem.name}");
-                    settingsData.AddCameraData(allFoundItem);
+                    Debug.Log($"Found it, {allFoundItem.name} with location at {allFoundItem.transform.position.x},{allFoundItem.transform.position.y},{allFoundItem.transform.position.z}");
+                    var dataBack = settingsData.AddCameraData(allFoundItem);
+                    Debug.Log($"Results of adding it to data?: {dataBack}");
                 }
             }
             //need to back up my data
@@ -976,7 +977,124 @@ namespace FuzzPhyte.Recorder.Editor
             // Optionally, log the creation
             Debug.Log("ExampleAsset created at " + assetPath);
         }
+        #region Scriptable Object Calls 
+        public static void PassFullConfigurationFileFromSO(FP_RecorderDataSO passedData)
+        {
+            Debug.LogWarning($"This isn't fully setup yet! Number cameras passed: {passedData.NumberOfCameras}");
+            //OLD SETUP
+            var data = passedData;
+            if (settings == null)
+            {
+                Debug.LogError($"Setting was null!");
+                return;
+            }
+            //JOHN THIS RETURN
+            //need to evaluate settings vs settingsData
+            return;
+            /*
+             * GenerateGameObject(5, "FPCamera", FP_RecorderUtility.CamTAG);
+            //we need to now back that number out to reset our starting number for the data files themselves
+            var startingNumberTag = NumberCamerasInScene - 5;
+            New360RecorderDataCount(5, FP_RecorderUtility.CamTAG,startingNumberTag);
+             **/
+            if (data != null)
+            {
+                //figure out what recorder to add based on the FP_RecorderDataSO
+                var blankImageRecorder = ScriptableObject.CreateInstance<ImageRecorderSettings>();
+                var movieImageRecorder = ScriptableObject.CreateInstance<MovieRecorderSettings>();
+                var blankAudioRecorder = ScriptableObject.CreateInstance<AudioRecorderSettings>();
+                var blankAnimClipRecorder = ScriptableObject.CreateInstance<AnimationRecorderSettings>();
+                //Input Settings first
+                if (data.RecorderType == FPRecorderType.ImageSequence || data.RecorderType == FPRecorderType.Movie)
+                {
+                    blankImageRecorder.imageInputSettings = MovieImageSequenceInputTarget(data);
+                    movieImageRecorder.ImageInputSettings = MovieImageSequenceInputTarget(data);
+                    blankImageRecorder.OutputFile = data.OutputCameraData.FileName;
+                    movieImageRecorder.OutputFile = data.OutputCameraData.FileName;
+                    blankImageRecorder.name = data.RecorderName;
+                    movieImageRecorder.name = data.RecorderName;
+                }
+                else
+                {
+                    if (data.RecorderType == FPRecorderType.Audio)
+                    {
+                        var castAudio = data.InputFormatData as AudioRecorder;
+                        blankAudioRecorder = castAudio.ReturnUnityOutputFormat();
+                        blankAudioRecorder.OutputFile = data.OutputCameraData.FileName;
+                        blankAudioRecorder.name = data.RecorderName;
+                    }
+                    else
+                    {
+                        if (data.RecorderType == FPRecorderType.AnimationClip)
+                        {
+                            var castClip = data.InputFormatData as AnimationClipRecorder;
+                            blankAnimClipRecorder = castClip.ReturnUnityOutputFormat(data.AnimationClipGameObject);
+                            blankAnimClipRecorder.OutputFile = data.OutputCameraData.FileName;
+                            blankAnimClipRecorder.name = data.RecorderName;
+                        }
+                    }
+                }
 
+                //output format now
+                switch (data.RecorderType)
+                {
+                    case FPRecorderType.AnimationClip:
+                        settings.AddRecorderSettings(blankAnimClipRecorder);
+                        break;
+                    case FPRecorderType.Movie:
+                        switch (data.OutputFormatData.EncoderType)
+                        {
+                            case FPEncoderType.UnityEncoder:
+                                var unityEncoder = data.OutputFormatData as MovieRecorderUnityMedia;
+                                movieImageRecorder.EncoderSettings = unityEncoder.CoreEncoderSettings;
+                                break;
+                            case FPEncoderType.ProResEncoder:
+                                var proResEncoder = data.OutputFormatData as MovieRecorderProRes;
+                                movieImageRecorder.EncoderSettings = proResEncoder.ProResEncoderSettings;
+                                break;
+                            case FPEncoderType.GifEncoder:
+                                var gifEncoder = data.OutputFormatData as MovieRecorderGif;
+                                movieImageRecorder.EncoderSettings = gifEncoder.GifEncoderSettings;
+                                break;
+                        }
+                        settings.AddRecorderSettings(movieImageRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(blankAnimClipRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(blankImageRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(blankAudioRecorder);
+                        break;
+                    case FPRecorderType.ImageSequence:
+                        var img = data.OutputFormatData as ImageSeqRecorder;
+                        blankImageRecorder.OutputFormat = img.MediaFileFormat;
+                        blankImageRecorder.EXRCompression = img.Compression;
+                        blankImageRecorder.JpegQuality = img.Quality;
+                        settings.AddRecorderSettings(blankImageRecorder);
+                        ///RemoveScriptableObjectMemoryGenerated(movieImageRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(blankAnimClipRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(blankAudioRecorder);
+                        break;
+                    case FPRecorderType.Audio:
+                        settings.AddRecorderSettings(blankAudioRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(blankAnimClipRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(blankImageRecorder);
+                        //RemoveScriptableObjectMemoryGenerated(movieImageRecorder);
+                        break;
+                }
+
+                var someWindow = (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
+                //someWindow.
+                someWindow.SetRecorderControllerSettings(settings);
+                //update the settings file
+                TheRecorderSettingsJSON = JsonUtility.ToJson(settings);
+                HaveRecorderSettings = true;
+                //now spawn the gameobjects
+
+            }
+            else
+            {
+                Debug.LogError($"You need to select an 'FP_RecorderDataSO' type, not a {Selection.activeObject.ToString()}");
+            }
+        }
+        #endregion
         #region REPLACING OLD MENU STUFF For EASY BUTTON
         //[MenuItem(CreateAndAdd360RecorderToRecorderSettings,priority = FP_UtilityData.ORDER_SUBMENU_LVL3+5)]
         static protected void CreateAndAdd360Recorder()
