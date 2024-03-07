@@ -16,12 +16,13 @@
         "com.unity.mathematics": "1.2.6",
         "com.fuzzphyte.utility": "https://github.com/jshull/FP_Utility.git",
         "com.fuzzphyte.utility.editor": "https://github.com/jshull/FP_Utility.git",
-        "com.unity.recorder": "4.0.2"
+        "com.unity.recorder": "4.0.2",
+        "com.unity.render-pipelines.universal": "14.0.10"
     },
     "samples": [
       {
         "displayName": "UnityEditor.Recorder data examples",
-        "description": "Includes a couple different scriptable object examples and folders",
+        "description": "Includes a couple different scriptableobject examples and folders",
         "path": "Samples~/URPSamples"
       }
     ],
