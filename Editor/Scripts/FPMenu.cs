@@ -855,6 +855,7 @@ namespace FuzzPhyte.Recorder.Editor
                 Debug.Log($"Before Assets: {localSamplesFolder}");
                 localSamplesFolder = Path.Combine("Assets", localSamplesFolder);
                 Debug.Log($"After Assets: {localSamplesFolder}");
+                AssetDatabase.Refresh();
                 dataPath = FP_Utility_Editor.CreateAssetFolder(localSamplesFolder, FP_RecorderUtility.SAMPLELOCALFOLDER);
                 if (!dataPath.Item1)
                 {
