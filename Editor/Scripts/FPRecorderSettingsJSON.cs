@@ -345,7 +345,7 @@ namespace FuzzPhyte.Recorder.Editor
             newDataStruct.Source = FPInputSettings.a360View;
             newDataStruct.Encoder = FPEncoderType.ImageEncoder;
             var inputSettings = new Camera360InputSettings();
-            var outputFormat = new ImageRecorderSettings();
+            var outputFormat = ScriptableObject.CreateInstance<ImageRecorderSettings>();
 
             //input
             inputSettings.OutputHeight = height;

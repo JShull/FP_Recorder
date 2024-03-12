@@ -37,7 +37,8 @@ namespace FuzzPhyte.Recorder.Editor
                     FileName += "_" + wCard;
                 }
             }
-            var mediaOutputFolder = Path.Combine(Application.dataPath,"Recordings/"+FileName);
+            var mediaOutputFolder = Path.Combine(Application.dataPath, "Recordings");// +FileName);
+            mediaOutputFolder+="\\"+FileName;
             FileName = mediaOutputFolder;
         }
         public void Init(List<FPWildCards>wCards, OutputPath.Root anOutput)
