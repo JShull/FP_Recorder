@@ -499,8 +499,8 @@ namespace FuzzPhyte.Recorder.Editor
             var outputFileAssetPath = AssetDatabase.GenerateUniqueAssetPath(outputFile.Item2 + "/OutputFileRecordTake.asset");
             List<FPWildCards> _cards = new List<FPWildCards>
             {
-                FPWildCards.RECORDER,
-                FPWildCards.TAKE
+                FPWildCards.SCENE,
+                FPWildCards.RECORDER
             };
             var outputFileAsset = FP_OutputFileSO.CreateInstance(_cards, UnityEditor.Recorder.OutputPath.Root.AssetsFolder);
             data.OutputFileData = outputFileAsset.FileName;

@@ -635,8 +635,8 @@ namespace FuzzPhyte.Recorder.Editor
         {
             var newList = new List<FPWildCards>
             {
-                FPWildCards.RECORDER,
-                FPWildCards.TAKE
+                FPWildCards.SCENE,
+                FPWildCards.RECORDER
             };
             
             for (int i = 0; i < numRecorders; i++)
@@ -761,8 +761,8 @@ namespace FuzzPhyte.Recorder.Editor
             {
                 var newList = new List<FPWildCards>
                 {
-                    FPWildCards.RECORDER,
-                    FPWildCards.TAKE
+                    FPWildCards.SCENE,
+                    FPWildCards.RECORDER
                 };
 
                 var dataItem = settingsData.CreateImageSequence360PNG(2048, 4096,2048, ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageSource.TaggedCamera,ImageRecorderSettings.EXRCompressionType.Zip, newList, FP_RecorderUtility.CamTAG);
@@ -995,14 +995,14 @@ namespace FuzzPhyte.Recorder.Editor
         }
         #endregion
         //JOHN MENU REMOVED ITEM [MenuItem(RecordTakeOutputFile, priority =FP_UtilityData.ORDER_SUBMENU_LVL1)]
-        static protected void GenerateOutputFileRecorderTake()
+        static protected void GenerateOutputFileSceneTake()
         {
             var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT4);
             var assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/OutputFileRecordTake.asset");
             List<FPWildCards> _cards = new List<FPWildCards>
             {
-                FPWildCards.RECORDER,
-                FPWildCards.TAKE
+                FPWildCards.SCENE,
+                FPWildCards.RECORDER
             };
             var asset = FP_OutputFileSO.CreateInstance(_cards, UnityEditor.Recorder.OutputPath.Root.AssetsFolder);
             CreateAssetAt(asset, assetPath);
@@ -1065,8 +1065,8 @@ namespace FuzzPhyte.Recorder.Editor
             var outputFileAssetPath = AssetDatabase.GenerateUniqueAssetPath(outputFile.Item2 + "/OutputFileRecordTake.asset");
             List<FPWildCards> _cards = new List<FPWildCards>
             {
-                FPWildCards.RECORDER,
-                FPWildCards.TAKE
+                FPWildCards.SCENE,
+                FPWildCards.RECORDER
             };
             var outputFileAsset = FP_OutputFileSO.CreateInstance(_cards, UnityEditor.Recorder.OutputPath.Root.AssetsFolder);
             CreateAssetAt(outputFileAsset, outputFileAssetPath);
