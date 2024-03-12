@@ -497,6 +497,8 @@ namespace FuzzPhyte.Recorder.Editor
             if(settingsData == null)
             {
                 settingsData = new FPRecorderSettingsJSON(RecordMode.SingleFrame, 1, true, -1, true);
+                NumberCamerasInScene = 0;
+                Debug.LogWarning($"Establishing Editor Prefs for FP_Recorder");
             }
         }
         /// <summary>
@@ -569,6 +571,7 @@ namespace FuzzPhyte.Recorder.Editor
         static void GenerateGameObject(int numberToSpawn,string baseName, string baseTag, int camIndex,float yStartHeight=1.7f)
         {
             var currentCamsInScene = NumberCamerasInScene;
+            Debug.Log($"Current # FP Cams in Scene: {currentCamsInScene}");
             var endCamsInScene = NumberCamerasInScene + numberToSpawn;
             if (NumberCameraTags < endCamsInScene)
             {
