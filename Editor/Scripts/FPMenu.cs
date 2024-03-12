@@ -544,15 +544,20 @@ namespace FuzzPhyte.Recorder.Editor
                 //newObj.transform.localPosition = new Vector3(0, yStartHeight, (i + 1) * 0.5f);
                 Camera newCam = newObj.AddComponent<Camera>(); // Add Camera component
                                                                //set renderer here
+                
 #if UNITY_PIPELINE_URP
                 var camData = newCam.gameObject.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
-                camData.SetRenderer(rendererIndex);
+                if(camData!= null)
+                {
+                    camData.SetRenderer(rendererIndex);
+                }   
+                //camData.SetRenderer(rendererIndex);
 #endif
-                //#if UNITY_PIPELINE_URP
-                //newCam.gameObject.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>()
-                //                
-                //#endif
-                UnityEngine.Object.DestroyImmediate(newObj.GetComponent<AudioListener>()); // Remove the Audio Listener
+                if(newObj.GetComponent<AudioListener>() != null)
+                {
+                    UnityEngine.Object.DestroyImmediate(newObj.GetComponent<AudioListener>()); // Remove the Audio Listener
+                }
+               
 
             }
             NumberCamerasInScene += numberToSpawn;
@@ -937,7 +942,7 @@ namespace FuzzPhyte.Recorder.Editor
                         HaveRecorderSettings = true;
                         //match tags
                         var curCountSize = settings.RecorderSettings.Count();
-
+                        Debug.Log($"Current # of Recorders: {curCountSize}");
                         if (NumberCameraTags<curCountSize)
                         {
                             //increase number camera tags
