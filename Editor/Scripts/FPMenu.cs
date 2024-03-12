@@ -9,6 +9,7 @@ using System.IO;
 using System;
 using System.Text;
 using System.Linq;
+using UnityEngine.SceneManagement;
 namespace FuzzPhyte.Recorder.Editor
 {
     /// <summary>
@@ -883,7 +884,11 @@ namespace FuzzPhyte.Recorder.Editor
             TheRecorderSettingsJSON = JsonUtility.ToJson(settingsData);
             var jsonAsset = TheRecorderSettingsJSON;
             //var asset = AnimationClipRecorder.CreateInstance(true, true, AnimationInputSettings.CurveSimplificationOptions.Lossless);
-            string backupFile = "/FPBackup_"+System.DateTime.Now.ToString("yyyyMMdd_hhmm") +".json";
+            string currentSceneName = SceneManager.GetActiveScene().name;
+            string backUpRootFile = "/FPBackup_" + currentSceneName+"_"+System.DateTime.Now.ToString("MM_dd_yy_HHmm_s");
+            
+            string backupFile = backUpRootFile + ".json";
+            
             string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2+backupFile);
             Debug.Log($"Asset Backup Path: {assetPath}");
             //FileStream file = File.Create(assetPath);
@@ -901,14 +906,23 @@ namespace FuzzPhyte.Recorder.Editor
                     } // StreamWriter is automatically flushed and closed here
                 } // FileStream is automatically closed here
 
-                Debug.Log($"Backup file generated at {assetPath}");
+                Debug.Log($"Backup file generated at {assetPath} lets try generating and saving a 'Unity Recorder List'");
+                
+                //
             }
             catch (Exception ex)
             {
                 // If an error occurs, display the message
                Debug.LogError("An error occurred while writing the backup file: " + ex.Message);
             }
+            string assetSettingsFile = backUpRootFile + "_settings.asset";
+            SaveRecorderListFromUnityWindow(dataPath.Item2,assetSettingsFile);
 
+        }
+        static protected void SaveRecorderListFromUnityWindow(string path, string fileName)
+        {
+            string assetPath = AssetDatabase.GenerateUniqueAssetPath(path + fileName);
+            RecorderControllerSettingsPreset.SaveAtPath(settings, assetPath);
         }
         [MenuItem(ReadBackupJSON, priority = FP_UtilityData.ORDER_SUBMENU_LVL5 + 8)]
         static protected void ReadJSONFromLocalSelectedFileMenu()
