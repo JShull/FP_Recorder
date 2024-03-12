@@ -20,7 +20,7 @@
     },
     "samples": [
       {
-        "displayName": "UnityEditor.Recorder data examples",
+        "displayName": "FP Recorder Samples",
         "description": "Includes a couple different scriptableobject examples and folders",
         "path": "Samples~/URPSamples"
       }
