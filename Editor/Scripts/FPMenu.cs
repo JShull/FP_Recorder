@@ -498,6 +498,7 @@ namespace FuzzPhyte.Recorder.Editor
             {
                 settingsData = new FPRecorderSettingsJSON(RecordMode.SingleFrame, 1, true, -1, true);
                 NumberCamerasInScene = 0;
+                NumberCameraTags = 0;
                 Debug.LogWarning($"Establishing Editor Prefs for FP_Recorder");
             }
         }
