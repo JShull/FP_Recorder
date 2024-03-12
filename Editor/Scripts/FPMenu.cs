@@ -271,7 +271,7 @@ namespace FuzzPhyte.Recorder.Editor
         static protected void GenerateMovieRecorder()
         {
             // Define the folder path where the asset will be saved            
-            var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
             GenerateRecorder(FPRecorderType.Movie, dataPath.Item2, "AMovieRecorder.asset", "FP_Movie");
         }
         //JOHN MENU REMOVED ITEM [MenuItem(MovieRecorderMenu, true)]
@@ -283,7 +283,7 @@ namespace FuzzPhyte.Recorder.Editor
         static protected void GenerateAnimClipRecorder()
         {
             // Define the folder path where the asset will be saved            
-            var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
             GenerateRecorder(FPRecorderType.AnimationClip, dataPath.Item2, "AAnimClipRecorder.asset","FP_AnimClip");
         }
         //JOHN MENU REMOVED ITEM [MenuItem(AnimClipRecorderMenu, true)]
@@ -295,7 +295,7 @@ namespace FuzzPhyte.Recorder.Editor
         static protected void GenerateImageSeqRecorder()
         {
             // Define the folder path where the asset will be saved            
-            var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
             GenerateRecorder(FPRecorderType.ImageSequence, dataPath.Item2, "ImageSequenceRecorder.asset","FP_ImgSequence");
         }
         //JOHN MENU REMOVED ITEM [MenuItem(ImageSeqRecorderMenu, true)]
@@ -307,7 +307,7 @@ namespace FuzzPhyte.Recorder.Editor
         static protected void GenerateAudioRecorder()
         {
             // Define the folder path where the asset will be saved            
-            var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
             GenerateRecorder(FPRecorderType.Audio, dataPath.Item2, "AudioRecorder.asset","FP_Audio");
         }
         //JOHN MENU REMOVED ITEM [MenuItem(AudioRecorderMenu, true)]
@@ -349,7 +349,7 @@ namespace FuzzPhyte.Recorder.Editor
         //JOHN MENU REMOVED ITEM [MenuItem(AnimClipOutput, priority = FP_UtilityData.ORDER_SUBMENU_LVL1)]
         static protected void GenerateOutputAnimationClip()
         {
-            var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
 
             var asset = AnimationClipRecorder.CreateInstance(true, true, AnimationInputSettings.CurveSimplificationOptions.Lossless);
             string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/OutputFormatAnimationClip.asset");
@@ -366,7 +366,7 @@ namespace FuzzPhyte.Recorder.Editor
         //JOHN MENU REMOVED ITEM [MenuItem(MovieOutputMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL1+1)]
         static protected void GenerateOutputMovieEncoderUnity()
         {
-            var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
             var CoreEncoderSettings = new UnityEditor.Recorder.Encoder.CoreEncoderSettings();
             CoreEncoderSettings.Codec = UnityEditor.Recorder.Encoder.CoreEncoderSettings.OutputCodec.MP4;
             CoreEncoderSettings.EncodingQuality = UnityEditor.Recorder.Encoder.CoreEncoderSettings.VideoEncodingQuality.High;
@@ -382,7 +382,7 @@ namespace FuzzPhyte.Recorder.Editor
         //JOHN MENU REMOVED ITEM [MenuItem(MovieOutputProResMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL1+2)]
         static protected void GenerateOutputMovieEncoderProRes()
         {
-            var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
             
             var ProResEncoderSettings = new UnityEditor.Recorder.Encoder.ProResEncoderSettings();
             ProResEncoderSettings.Format = UnityEditor.Recorder.Encoder.ProResEncoderSettings.OutputFormat.ProRes4444XQ;
@@ -400,7 +400,7 @@ namespace FuzzPhyte.Recorder.Editor
         //JOHN MENU REMOVED ITEM [MenuItem(MovieOutputGif, priority =FP_UtilityData.ORDER_SUBMENU_LVL1+3)]
         static protected void GenerateOutputMovieEncoderGif()
         {
-            var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
             var gifEncoder = new UnityEditor.Recorder.Encoder.GifEncoderSettings();
             gifEncoder.Loop = true;
             gifEncoder.Quality = 90;
@@ -417,7 +417,7 @@ namespace FuzzPhyte.Recorder.Editor
         //JOHN MENU REMOVED ITEM [MenuItem(ImageSeqOutput, priority = FP_UtilityData.ORDER_SUBMENU_LVL1+4)]
         static protected void GenerateOutputImageSequence()
         {
-            var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
             string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/OutputFormatImgSequence.asset");
             var asset = ImageSeqRecorder.CreateInstance( ImageRecorderSettings.ImageRecorderOutputFormat.PNG , ImageRecorderSettings.EXRCompressionType.Zip, 100);
             CreateAssetAt(asset, assetPath);
@@ -430,7 +430,7 @@ namespace FuzzPhyte.Recorder.Editor
         //JOHN MENU REMOVED ITEM [MenuItem(AudioOutput, priority = FP_UtilityData.ORDER_SUBMENU_LVL1+5)]
         static protected void GenerateOutputAudio()
         {
-            var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
             string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/OutputFormatAudio.asset");
             var asset = AudioRecorder.CreateInstance();
             CreateAssetAt(asset, assetPath);
@@ -446,7 +446,7 @@ namespace FuzzPhyte.Recorder.Editor
         //JOHN MENU REMOVED ITEM [MenuItem(CamThreeSixtyInput, priority = FP_UtilityData.ORDER_SUBMENU_LVL1)]
         static protected void GenerateInputFileCamThreeSixty()
         {
-            var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT2);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT2);
             string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/InputFileCam360.asset");
 
             var asset = GenerateCamThreeSixty();
@@ -866,7 +866,7 @@ namespace FuzzPhyte.Recorder.Editor
                 localSamplesFolder = Path.Combine("Assets", localSamplesFolder);
                 Debug.Log($"After Assets: {localSamplesFolder}");
                 AssetDatabase.Refresh();
-                dataPath = FP_Utility_Editor.CreateAssetFolder(localSamplesFolder, FP_RecorderUtility.SAMPLELOCALFOLDER);
+                dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(localSamplesFolder, FP_RecorderUtility.SAMPLELOCALFOLDER);
                 if (!dataPath.Item1)
                 {
                     Debug.LogError($"Error on Path Creation, check the logs! Path at: {dataPath.Item2}");
@@ -875,7 +875,7 @@ namespace FuzzPhyte.Recorder.Editor
             }
             catch(Exception ex)
             {
-                Debug.LogError($"Error on Creating Asset Folder via FP_Utility_Editor.CreateAssetFolder() Message: {ex.Message}");
+                Debug.LogError($"Error on Creating Asset Folder via FP_Utility_Editor.CreateAssetDatabaseFolder() Message: {ex.Message}");
             }
             
             //sync my camera data
@@ -982,7 +982,7 @@ namespace FuzzPhyte.Recorder.Editor
                     Debug.LogError($"An error occurred while attempting to read the backup file at {assetPath}: " + ex.Message);
                 }
 
-                //var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.BACKUP);
+                //var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.BACKUP);
                 //var jsonAsset = TheRecorderSettingsJSON;
                 //var asset = AnimationClipRecorder.CreateInstance(true, true, AnimationInputSettings.CurveSimplificationOptions.Lossless);
                 //string backupFile = "/FPBackup_" + System.DateTime.Now.ToString("yyyyMMdd_hhmm") + ".json";
@@ -997,7 +997,7 @@ namespace FuzzPhyte.Recorder.Editor
         //JOHN MENU REMOVED ITEM [MenuItem(RecordTakeOutputFile, priority =FP_UtilityData.ORDER_SUBMENU_LVL1)]
         static protected void GenerateOutputFileSceneTake()
         {
-            var dataPath = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT4);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT4);
             var assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/OutputFileRecordTake.asset");
             List<FPWildCards> _cards = new List<FPWildCards>
             {
@@ -1058,10 +1058,10 @@ namespace FuzzPhyte.Recorder.Editor
             recorderAsset.RecorderName = "FP_Generated_ImgSeq";
             //Create all of the other files we need for 360
             //ThreeSixtyRecordData:FP_InputDataSO
-            var inputAsset = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT2);
+            var inputAsset = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT2);
             string inputAssetPath = AssetDatabase.GenerateUniqueAssetPath(inputAsset.Item2 + "/InputFileCam360.asset");
             //outputPath File
-            var outputFile = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT4);
+            var outputFile = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT4);
             var outputFileAssetPath = AssetDatabase.GenerateUniqueAssetPath(outputFile.Item2 + "/OutputFileRecordTake.asset");
             List<FPWildCards> _cards = new List<FPWildCards>
             {
@@ -1077,7 +1077,7 @@ namespace FuzzPhyte.Recorder.Editor
             recorderAsset.InputFormatData = inputCamAsset;
             //FP_OutputFileSO
             //FP_OutputFormatSO - would be ImageSeqRecorder for generic 360
-            var outputAsset = FP_Utility_Editor.CreateAssetFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+            var outputAsset = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
             string imgSeqOutputAssetPath = AssetDatabase.GenerateUniqueAssetPath(outputAsset.Item2 + "/OutputFormatImgSequence.asset");
 
             var imgSeqAsset = ImageSeqRecorder.CreateInstance( ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageRecorderSettings.EXRCompressionType.Zip, 100);
