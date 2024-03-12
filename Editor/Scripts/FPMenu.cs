@@ -475,6 +475,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             //check if we have the right amount of tags to manage this
             //we are going to add some cameras - when we do this we are going to increase the # we are tracking
+            NullCheckSettingsData();
             GenerateGameObject(5, "FPCamera", FP_RecorderUtility.CamTAG,settingsData.RendererIndex);
             //we need to now back that number out to reset our starting number for the data files themselves
             var startingNumberTag = NumberCamerasInScene - 5;
@@ -485,10 +486,18 @@ namespace FuzzPhyte.Recorder.Editor
         {
             //check if we have the right amount of tags to manage this
             //we are going to add some cameras - when we do this we are going to increase the # we are tracking
+            NullCheckSettingsData();
             GenerateGameObject(10, "FPCamera", FP_RecorderUtility.CamTAG, settingsData.RendererIndex);
             //we need to now back that number out to reset our starting number for the data files themselves
             var startingNumberTag = NumberCamerasInScene - 10;
             New360RecorderDataCount(10, FP_RecorderUtility.CamTAG, startingNumberTag);
+        }
+        private static void NullCheckSettingsData()
+        {
+            if(settingsData == null)
+            {
+                settingsData = new FPRecorderSettingsJSON(RecordMode.SingleFrame, 1, true, -1, true);
+            }
         }
         /// <summary>
         /// Generate GameObjects from a list of items from data- JSON
