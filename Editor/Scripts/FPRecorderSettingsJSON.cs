@@ -495,7 +495,7 @@ namespace FuzzPhyte.Recorder.Editor
         private static FPRecorderDataStruct SetupOutputFile(FPRecorderDataStruct data)
         {
             //outputPath File
-            var outputFile = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT4);
+            var outputFile = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT4);
             var outputFileAssetPath = AssetDatabase.GenerateUniqueAssetPath(outputFile.Item2 + "/OutputFileRecordTake.asset");
             List<FPWildCards> _cards = new List<FPWildCards>
             {

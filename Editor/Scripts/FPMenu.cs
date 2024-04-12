@@ -164,7 +164,10 @@ namespace FuzzPhyte.Recorder.Editor
             NumberCamerasInScene = 0;
             //save the settings as json and store them to my editerprefs
             TheRecorderSettingsJSON = JsonUtility.ToJson(settingsData);
-
+            
+            if(settings != null){
+                Undo.RecordObject(settings, "Modify Recorder Settings");
+            }
             settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
             settings.ExitPlayMode = settingsData.ExitPlayMode;
             settings.CapFrameRate = settingsData.CapFPS;
@@ -183,8 +186,45 @@ namespace FuzzPhyte.Recorder.Editor
                 RecorderEnabled = false;
                 Menu.SetChecked("FuzzPhyte/FP_Recorder/Ready", false);
             }
-
+            
+            CacheRecorderControllerSettings();
             EditorUtility.DisplayDialog("Reset Editor Pref Data!", $"Recorder Enabled? {RecorderEnabled}. Are there Tags? {NumberCameraTags} FP_Record camera tags in scene", "OK");
+        
+        }
+        /// <summary>
+        /// Function to save our RecorderControllerSettings file
+        /// </summary> <summary>
+        /// 
+        /// </summary>
+        static protected void CacheRecorderControllerSettings(){
+             //
+            // Define the folder path where the asset will be saved
+            //AssetDatabase.CreateAsset(settings, "Assets/YourPath/RecorderSettings.asset");
+           
+            string folderPath = Path.Combine(FP_RecorderUtility.ReturnSamplesPath(),FP_RecorderUtility.CAT1);
+            FP_Utility_Editor.CreateAssetPath(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT1);
+            FP_Utility_Editor.CreatePackageSampleFolder(FP_RecorderUtility.PRODUCT_NAME_UNITY,FP_RecorderUtility.BASEVERSION);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT1);
+            string cleanPath = dataPath.Item2;
+            cleanPath.Replace("\\","/");
+            Debug.Log($"Asset Path DataPath?: {dataPath.Item2} vs clean path {cleanPath}");
+            if (!AssetDatabase.IsValidFolder(folderPath))
+            {
+                var assetDatabaseLocation =AssetDatabase.CreateFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT1);
+                Debug.Log($"Asset Database Location: {assetDatabaseLocation}");
+            }
+            // The asset to be created
+            //var asset = ScriptableObject.CreateInstance<FP_RecorderSO>();
+            var fullPath = Path.Combine(dataPath.Item2,"FP_CachedRecorderControllerSettings.asset");
+            if (string.IsNullOrEmpty(fullPath)) {
+                Debug.LogError("Attempted to use an empty path to create an asset.");
+                return; // Or handle the error appropriately
+            }
+            string assetPath = AssetDatabase.GenerateUniqueAssetPath(fullPath);
+            AssetDatabase.CreateAsset(settings, assetPath);
+            EditorUtility.SetDirty(settings);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
         [MenuItem(ResetEVERYTHING, priority = FP_UtilityData.ORDER_SUBMENU_LVL4 + 7)]
         static protected void ResetEveryDataMenuItem()
@@ -271,7 +311,7 @@ namespace FuzzPhyte.Recorder.Editor
         static protected void GenerateMovieRecorder()
         {
             // Define the folder path where the asset will be saved            
-            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT1);
             GenerateRecorder(FPRecorderType.Movie, dataPath.Item2, "AMovieRecorder.asset", "FP_Movie");
         }
         //JOHN MENU REMOVED ITEM [MenuItem(MovieRecorderMenu, true)]
@@ -283,7 +323,7 @@ namespace FuzzPhyte.Recorder.Editor
         static protected void GenerateAnimClipRecorder()
         {
             // Define the folder path where the asset will be saved            
-            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT1);
             GenerateRecorder(FPRecorderType.AnimationClip, dataPath.Item2, "AAnimClipRecorder.asset","FP_AnimClip");
         }
         //JOHN MENU REMOVED ITEM [MenuItem(AnimClipRecorderMenu, true)]
@@ -295,7 +335,7 @@ namespace FuzzPhyte.Recorder.Editor
         static protected void GenerateImageSeqRecorder()
         {
             // Define the folder path where the asset will be saved            
-            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT1);
             GenerateRecorder(FPRecorderType.ImageSequence, dataPath.Item2, "ImageSequenceRecorder.asset","FP_ImgSequence");
         }
         //JOHN MENU REMOVED ITEM [MenuItem(ImageSeqRecorderMenu, true)]
@@ -307,7 +347,7 @@ namespace FuzzPhyte.Recorder.Editor
         static protected void GenerateAudioRecorder()
         {
             // Define the folder path where the asset will be saved            
-            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT1);
             GenerateRecorder(FPRecorderType.Audio, dataPath.Item2, "AudioRecorder.asset","FP_Audio");
         }
         //JOHN MENU REMOVED ITEM [MenuItem(AudioRecorderMenu, true)]
@@ -349,7 +389,7 @@ namespace FuzzPhyte.Recorder.Editor
         //JOHN MENU REMOVED ITEM [MenuItem(AnimClipOutput, priority = FP_UtilityData.ORDER_SUBMENU_LVL1)]
         static protected void GenerateOutputAnimationClip()
         {
-            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT3);
 
             var asset = AnimationClipRecorder.CreateInstance(true, true, AnimationInputSettings.CurveSimplificationOptions.Lossless);
             string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/OutputFormatAnimationClip.asset");
@@ -366,7 +406,7 @@ namespace FuzzPhyte.Recorder.Editor
         //JOHN MENU REMOVED ITEM [MenuItem(MovieOutputMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL1+1)]
         static protected void GenerateOutputMovieEncoderUnity()
         {
-            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT3);
             var CoreEncoderSettings = new UnityEditor.Recorder.Encoder.CoreEncoderSettings();
             CoreEncoderSettings.Codec = UnityEditor.Recorder.Encoder.CoreEncoderSettings.OutputCodec.MP4;
             CoreEncoderSettings.EncodingQuality = UnityEditor.Recorder.Encoder.CoreEncoderSettings.VideoEncodingQuality.High;
@@ -382,7 +422,7 @@ namespace FuzzPhyte.Recorder.Editor
         //JOHN MENU REMOVED ITEM [MenuItem(MovieOutputProResMenu, priority = FP_UtilityData.ORDER_SUBMENU_LVL1+2)]
         static protected void GenerateOutputMovieEncoderProRes()
         {
-            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT3);
             
             var ProResEncoderSettings = new UnityEditor.Recorder.Encoder.ProResEncoderSettings();
             ProResEncoderSettings.Format = UnityEditor.Recorder.Encoder.ProResEncoderSettings.OutputFormat.ProRes4444XQ;
@@ -400,7 +440,7 @@ namespace FuzzPhyte.Recorder.Editor
         //JOHN MENU REMOVED ITEM [MenuItem(MovieOutputGif, priority =FP_UtilityData.ORDER_SUBMENU_LVL1+3)]
         static protected void GenerateOutputMovieEncoderGif()
         {
-            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT3);
             var gifEncoder = new UnityEditor.Recorder.Encoder.GifEncoderSettings();
             gifEncoder.Loop = true;
             gifEncoder.Quality = 90;
@@ -417,7 +457,7 @@ namespace FuzzPhyte.Recorder.Editor
         //JOHN MENU REMOVED ITEM [MenuItem(ImageSeqOutput, priority = FP_UtilityData.ORDER_SUBMENU_LVL1+4)]
         static protected void GenerateOutputImageSequence()
         {
-            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT3);
             string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/OutputFormatImgSequence.asset");
             var asset = ImageSeqRecorder.CreateInstance( ImageRecorderSettings.ImageRecorderOutputFormat.PNG , ImageRecorderSettings.EXRCompressionType.Zip, 100);
             CreateAssetAt(asset, assetPath);
@@ -430,7 +470,7 @@ namespace FuzzPhyte.Recorder.Editor
         //JOHN MENU REMOVED ITEM [MenuItem(AudioOutput, priority = FP_UtilityData.ORDER_SUBMENU_LVL1+5)]
         static protected void GenerateOutputAudio()
         {
-            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT3);
             string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/OutputFormatAudio.asset");
             var asset = AudioRecorder.CreateInstance();
             CreateAssetAt(asset, assetPath);
@@ -446,7 +486,7 @@ namespace FuzzPhyte.Recorder.Editor
         //JOHN MENU REMOVED ITEM [MenuItem(CamThreeSixtyInput, priority = FP_UtilityData.ORDER_SUBMENU_LVL1)]
         static protected void GenerateInputFileCamThreeSixty()
         {
-            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT2);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT2);
             string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/InputFileCam360.asset");
 
             var asset = GenerateCamThreeSixty();
@@ -689,12 +729,16 @@ namespace FuzzPhyte.Recorder.Editor
                 //need to generate a blank 
                 //save the settings as json and store them to my editerprefs
                 TheRecorderSettingsJSON = JsonUtility.ToJson(settingsData);
+                if(settings != null){
+                    Undo.RecordObject(settings, "Modify Recorder Settings");
+                }
                 settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
                 TheCameraSettingsData = JsonUtility.ToJson(cameraData);
                 settings.ExitPlayMode = settingsData.ExitPlayMode;
                 settings.CapFrameRate = settingsData.CapFPS;
                 settings.FrameRate = settingsData.FrameRate;
                 settings.FrameRatePlayback = settingsData.Playback;
+                CacheRecorderControllerSettings();
                 HaveRecorderSettings = true;
             }
 
@@ -728,6 +772,9 @@ namespace FuzzPhyte.Recorder.Editor
                 else
                 {
                     Debug.LogWarning($"Our Settings File contained not enough information, need to manually build it and/or look into something...");
+                    if(settings != null){
+                        Undo.RecordObject(settings, "Modify Recorder Settings");
+                    }
                     settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
                     settings.ExitPlayMode = settingsData.ExitPlayMode;
                     settings.CapFrameRate = settingsData.CapFPS;
@@ -743,6 +790,7 @@ namespace FuzzPhyte.Recorder.Editor
                     {
                         Debug.LogWarning($"Return was null!");
                     }
+                    CacheRecorderControllerSettings();
                 }
             }
             catch (System.Exception ex)
@@ -800,13 +848,16 @@ namespace FuzzPhyte.Recorder.Editor
             else
             {
                 Debug.LogWarning($"Settings isn't exactly right, need to rebuild it?");
+                if(settings != null){
+                    Undo.RecordObject(settings, "Modify Recorder Settings");
+                }
                 settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
                 settings.ExitPlayMode = settingsData.ExitPlayMode;
                 settings.CapFrameRate = settingsData.CapFPS;
                 settings.FrameRate = settingsData.FrameRate;
                 settings.FrameRatePlayback = settingsData.Playback;
                 settings = settingsReturn.Item1;
-
+                CacheRecorderControllerSettings();
             }
             var someWindow = (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
             //someWindow.
@@ -919,10 +970,45 @@ namespace FuzzPhyte.Recorder.Editor
             SaveRecorderListFromUnityWindow(dataPath.Item2,assetSettingsFile);
 
         }
+        public static RecorderControllerSettings GetCurrentRecorderSettings()
+    {
+        // This line attempts to get the currently open Recorder window.
+        // Note: The actual class name might differ and might not be directly accessible without reflection.
+        var recorderWindow = EditorWindow.GetWindow<RecorderWindow>("Unity Recorder", typeof(RecorderWindow));
+
+        if (recorderWindow != null)
+        {
+            // Access the RecorderController or its settings here
+            // This part is speculative and depends on the internal implementation of the RecorderWindow
+            // You may need to use reflection to get private fields if they are not publicly exposed
+            var controller = recorderWindow.GetType().GetField("m_RecorderController", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(recorderWindow) as RecorderController;
+
+            if (controller != null)
+            {
+                return controller.Settings;
+            }
+        }
+
+        return null;
+    }
         static protected void SaveRecorderListFromUnityWindow(string path, string fileName)
         {
             string assetPath = AssetDatabase.GenerateUniqueAssetPath(path + fileName);
-            RecorderControllerSettingsPreset.SaveAtPath(settings, assetPath);
+            if(settings != null)
+            {
+                RecorderControllerSettingsPreset.SaveAtPath(settings, assetPath);
+
+            }else{
+                Debug.Log($"Settings are null, going to pull from the current recorder window then!");
+                //get settings from the recorder 
+                var activeSettings = GetCurrentRecorderSettings();
+                if(activeSettings != null)
+                {
+                    Debug.Log($"Saved Settings from the Recorder Window on your behalf at {assetPath}");
+                    RecorderControllerSettingsPreset.SaveAtPath(activeSettings, assetPath);
+                }
+            }
+           
         }
         [MenuItem(ReadBackupJSON, priority = FP_UtilityData.ORDER_SUBMENU_LVL5 + 8)]
         static protected void ReadJSONFromLocalSelectedFileMenu()
@@ -997,7 +1083,7 @@ namespace FuzzPhyte.Recorder.Editor
         //JOHN MENU REMOVED ITEM [MenuItem(RecordTakeOutputFile, priority =FP_UtilityData.ORDER_SUBMENU_LVL1)]
         static protected void GenerateOutputFileSceneTake()
         {
-            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT4);
+            var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT4);
             var assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/OutputFileRecordTake.asset");
             List<FPWildCards> _cards = new List<FPWildCards>
             {
@@ -1016,11 +1102,11 @@ namespace FuzzPhyte.Recorder.Editor
         static protected void GenerateRecorderConfiguration()
         {
             // Define the folder path where the asset will be saved
-            string folderPath = FP_RecorderUtility.SAMPLESPATH + "/" + FP_RecorderUtility.CAT1;
+            string folderPath = Path.Combine(FP_RecorderUtility.ReturnSamplesPath(),FP_RecorderUtility.CAT1);
 
             if (!AssetDatabase.IsValidFolder(folderPath))
             {
-                AssetDatabase.CreateFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
+                AssetDatabase.CreateFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT1);
             }
 
             // The asset to be created
@@ -1044,11 +1130,11 @@ namespace FuzzPhyte.Recorder.Editor
             // Define the folder path where the asset will be saved
             //need to generate all of the supporting files first
 
-            string folderPath = FP_RecorderUtility.SAMPLESPATH + "/" + FP_RecorderUtility.CAT1;
+            string folderPath = Path.Combine(FP_RecorderUtility.ReturnSamplesPath(),FP_RecorderUtility.CAT1);
 
             if (!AssetDatabase.IsValidFolder(folderPath))
             {
-                AssetDatabase.CreateFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT1);
+                AssetDatabase.CreateFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT1);
             }
 
             // The asset to be created
@@ -1058,10 +1144,10 @@ namespace FuzzPhyte.Recorder.Editor
             recorderAsset.RecorderName = "FP_Generated_ImgSeq";
             //Create all of the other files we need for 360
             //ThreeSixtyRecordData:FP_InputDataSO
-            var inputAsset = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT2);
+            var inputAsset = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT2);
             string inputAssetPath = AssetDatabase.GenerateUniqueAssetPath(inputAsset.Item2 + "/InputFileCam360.asset");
             //outputPath File
-            var outputFile = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT4);
+            var outputFile = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT4);
             var outputFileAssetPath = AssetDatabase.GenerateUniqueAssetPath(outputFile.Item2 + "/OutputFileRecordTake.asset");
             List<FPWildCards> _cards = new List<FPWildCards>
             {
@@ -1077,7 +1163,7 @@ namespace FuzzPhyte.Recorder.Editor
             recorderAsset.InputFormatData = inputCamAsset;
             //FP_OutputFileSO
             //FP_OutputFormatSO - would be ImageSeqRecorder for generic 360
-            var outputAsset = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.SAMPLESPATH, FP_RecorderUtility.CAT3);
+            var outputAsset = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT3);
             string imgSeqOutputAssetPath = AssetDatabase.GenerateUniqueAssetPath(outputAsset.Item2 + "/OutputFormatImgSequence.asset");
 
             var imgSeqAsset = ImageSeqRecorder.CreateInstance( ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageRecorderSettings.EXRCompressionType.Zip, 100);
@@ -1228,6 +1314,9 @@ namespace FuzzPhyte.Recorder.Editor
             if (settings == null)
             {
                 //repopulate from a saved file?
+                if(settings != null){
+                    Undo.RecordObject(settings, "Modify Recorder Settings");
+                }
                 if (HaveRecorderSettings)
                 {
                     //load the settings from the json
@@ -1349,6 +1438,7 @@ namespace FuzzPhyte.Recorder.Editor
                 //update the settings file
                 TheRecorderSettingsJSON = JsonUtility.ToJson(settings);
                 HaveRecorderSettings = true;
+                CacheRecorderControllerSettings();
                 //EditorUtility.SetDirty(controller.Settings);
                 //AssetDatabase.SaveAssetIfDirty(controller.Settings);
             }
@@ -1431,7 +1521,7 @@ namespace FuzzPhyte.Recorder.Editor
 
         public string ReturnSamplePath()
         {
-            return FP_RecorderUtility.SAMPLESPATH;
+            return FP_RecorderUtility.ReturnSamplesPath();
         }
     }
 

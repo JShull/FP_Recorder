@@ -7,6 +7,7 @@ using FuzzPhyte.Utility.Editor;
 using System.Threading.Tasks;
 using UnityEditor.PackageManager.Requests;
 using System.Linq;
+using System.IO;
 namespace FuzzPhyte.Recorder.Editor
 {
     [Serializable]
@@ -25,13 +26,14 @@ namespace FuzzPhyte.Recorder.Editor
         public const string SUB1 = "Create";
         public const string SUB2 = "Tags";
         public const string BACKUP = "DataBackup";
-        public const string SAMPLESPATH = "Assets/" + PRODUCT_NAME + "/Samples/URPSamples";
+        //private const string SAMPLESPATH = "Assets/" + PRODUCT_NAME + "/Samples/URPSamples";
         public const string SAMPLELOCALFOLDER = PRODUCT_NAME_UNITY + " Samples";
-        public const string INSTALLSAMPLEPATH = "Samples\\" + PRODUCT_NAME_UNITY + "\\";
+        //public const string INSTALLSAMPLEPATH = "Samples/" + PRODUCT_NAME_UNITY + "/";
         public const string CamTAG = "FPCameraTag_";
         public const string BaseCamName = "FPCamera";
         public const string BASEVERSION = "0.1.0";
 
+        
         private static async Task<string> ReturnPackageVersion()
         {
             try
@@ -55,18 +57,27 @@ namespace FuzzPhyte.Recorder.Editor
         public static async Task<string>ReturnInstallPath()
         {
             //var result = await Rereturn INSTALLSAMPLEPATH + BASEVERSION;turnPackageVersion();
-            return INSTALLSAMPLEPATH + BASEVERSION;
+            await Task.Delay(0);
+            var result = Path.Combine("Samples",PRODUCT_NAME_UNITY,BASEVERSION);
+            
+            return result;
 
+        }
+        public static string ReturnSamplesPath()
+        {
+            return Path.Combine("Assets","Samples",PRODUCT_NAME_UNITY,BASEVERSION,"URPSamples"); 
+            //return Path.Combine("Assets",PRODUCT_NAME,"Samples","URPSamples");
         }
         public static string ReturnProductName()
         {
             return PRODUCT_NAME;
         }
 
-        public static  string ReturnSamplePath()
+        /*public static  string ReturnSamplePath()
         {
             return SAMPLESPATH;
         }
+        */
         #region WildCards
         public const string AOV = "<AOV>";
         public const string DATE = "<Date>";
