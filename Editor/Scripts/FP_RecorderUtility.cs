@@ -31,7 +31,7 @@ namespace FuzzPhyte.Recorder.Editor
         //public const string INSTALLSAMPLEPATH = "Samples/" + PRODUCT_NAME_UNITY + "/";
         public const string CamTAG = "FPCameraTag_";
         public const string BaseCamName = "FPCamera";
-        public const string BASEVERSION = "0.1.0";
+        public const string BASEVERSION = "0.2.0";
 
         
         private static async Task<string> ReturnPackageVersion()

@@ -1,6 +1,6 @@
 {
     "name": "com.fuzzphyte.recorder",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "displayName": "FP Recorder",
     "description": "FP Recorder is a set of editor based scripts to help capture content from the Unity Recorder Class that utilizes a suite of Unity Editor scripts, scriptable objects, and JSON serialization to easily configure and remember your UnityEditor.Recorder Needs - designed to be built around data.",
     "unity": "2022.3",
@@ -21,8 +21,13 @@
     "samples": [
       {
         "displayName": "FP Recorder Samples",
-        "description": "Includes a couple different scriptableobject examples and folders",
-        "path": "Samples~/URPSamples"
+        "description": "Includes a set of files that are loaded via the camera prefab system",
+        "path": "Samples~/FP Recorder Samples"
+      },
+      {
+        "displayName" :"URPSamples",
+        "description": "Generic Parameter Files",
+        "path": "Samples~/URPSamples/"
       }
     ],
     "keywords": [

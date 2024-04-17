@@ -234,6 +234,15 @@ namespace FuzzPhyte.Recorder.Editor
         }
         #endregion
         /// <summary>
+        /// Runtime add camera tag to make sure we stay synced 
+        /// </summary>
+        public static void RuntimeAddSingleTag()
+        {
+            NullCheckSettingsData();
+            AddNumberTags(1,false);
+        }
+        
+        /// <summary>
         /// Adds 'x' number of camera tags
         /// </summary>
         /// <param name="numberTags"></param>
@@ -511,6 +520,10 @@ namespace FuzzPhyte.Recorder.Editor
         }
         #endregion
         #region Populate GameObject in Hierarchy
+        public static void RuntimeAddSingleCameraObject(GameObject runTimeOBJ)
+        {
+            GenerateGameObject(1,"FPCamera",FP_RecorderUtility.CamTAG,settingsData.RendererIndex);
+        }
         [MenuItem(FiveCameraSpawnSettings,priority =FP_UtilityData.ORDER_SUBMENU_LVL5+2)]
         protected static void Generate5CameraObjects()
         {
@@ -521,6 +534,45 @@ namespace FuzzPhyte.Recorder.Editor
             //we need to now back that number out to reset our starting number for the data files themselves
             var startingNumberTag = NumberCamerasInScene - 5;
             New360RecorderDataCount(5, FP_RecorderUtility.CamTAG,startingNumberTag);
+        }
+        public static void RunTimeAddSingleCamera(int tagNumber, string camTag)
+        {
+            //var newDataStruct = new FPRecorderDataStruct();
+            var newList = new List<FPWildCards>
+            {
+                FPWildCards.SCENE,
+                FPWildCards.RECORDER
+            };
+            var inputSettings = new Camera360InputSettings();
+            var outputFormat = ScriptableObject.CreateInstance<ImageRecorderSettings>();
+
+            //input
+            inputSettings.OutputHeight = 2048;
+            inputSettings.OutputWidth = 4096;
+            inputSettings.MapSize = 2048;
+            inputSettings.RenderStereo = false;
+            inputSettings.FlipFinalOutput = false;
+            inputSettings.Source = ImageSource.TaggedCamera;
+            inputSettings.CameraTag = camTag;
+            //output format
+            outputFormat.OutputFormat = ImageRecorderSettings.ImageRecorderOutputFormat.PNG;
+            outputFormat.EXRCompression = ImageRecorderSettings.EXRCompressionType.Zip;
+            //output file & set files to the 
+            var blankImageRecorder = ScriptableObject.CreateInstance<ImageRecorderSettings>();
+            blankImageRecorder.imageInputSettings = inputSettings;
+            blankImageRecorder.OutputFile = CreateOutputFileFromWildCards(newList).FileName;
+            blankImageRecorder.OutputFormat = ImageRecorderSettings.ImageRecorderOutputFormat.PNG;;
+            blankImageRecorder.EXRCompression = ImageRecorderSettings.EXRCompressionType.Zip;
+            blankImageRecorder.JpegQuality = 100;
+            blankImageRecorder.name = "FP_360Setup_" +tagNumber;
+            settings.AddRecorderSettings(blankImageRecorder);
+            RuntimeUpdateSettingsFromPreserve();
+            //New360RecorderDataCount(1,FP_RecorderUtility.CamTAG,tagNumber);
+        }
+        private static FP_OutputFileSO CreateOutputFileFromWildCards(List<FPWildCards> allWildCards)
+        {
+            var outputFileAsset = FP_OutputFileSO.CreateInstance(allWildCards, UnityEditor.Recorder.OutputPath.Root.AssetsFolder);
+            return outputFileAsset;
         }
         [MenuItem(TenCameraSpawnSettings,priority = FP_UtilityData.ORDER_SUBMENU_LVL5 + 3)]
         protected static void Generate10CameraObjects()
@@ -537,6 +589,9 @@ namespace FuzzPhyte.Recorder.Editor
         {
             if(settingsData == null)
             {
+                //can we get the data from the editor prefs via settings data?
+                var passedSettings = GetCurrentRecorderSettings();
+
                 settingsData = new FPRecorderSettingsJSON(RecordMode.SingleFrame, 1, true, -1, true);
                 NumberCamerasInScene = 0;
                 NumberCameraTags = 0;
@@ -609,7 +664,87 @@ namespace FuzzPhyte.Recorder.Editor
             //
         }
         /// <summary>
-        /// Drop in gameobjects for cameras
+        /// Generate GameObjects from runtime that is coming in From FPPreserveObject.cs 
+        /// </summary>
+        /// <param name="runtimeCams"></param>
+        public static void GenerateGameObjectRuntime(Transform PassedParent,List<GameObject> runtimeCams,string baseName, string baseTag)
+        {
+            if(runtimeCams.Count<=0){
+                return;
+            }
+            var camIndex = settingsData.RendererIndex;
+            var numberToSpawn = runtimeCams.Count;
+            var currentCamsInScene = NumberCamerasInScene;
+            Debug.Log($"Current # FP Cams in Scene: {currentCamsInScene}, current Number to spawn {numberToSpawn}");
+            var endCamsInScene = NumberCamerasInScene + numberToSpawn;
+            if (NumberCameraTags < endCamsInScene)
+            {
+                //we need more tags
+                Debug.Log($"We need more tags!");
+                AddNumberTags(numberToSpawn,false);
+            }
+            /*
+            GameObject preservedObject = PrefabUtility.InstantiatePrefab(obj) as GameObject;
+
+            // Explicitly copy transform properties
+            if (preservedObject != null)
+            {
+                preservedObject.transform.position = obj.transform.position;
+                preservedObject.transform.rotation = obj.transform.rotation;
+                preservedObject.transform.localScale = obj.transform.localScale;
+            }
+            */
+            GameObject newParent = GameObject.Instantiate(PassedParent.gameObject);
+            newParent.name = baseName + "_" + numberToSpawn + "_cameraParent";
+            newParent.transform.position = new Vector3(0, 0, 0);
+        
+            if (cameraData == null)
+            {
+                cameraData = new FPRecorderGOCams();
+            }
+            for(int i = 0; i < numberToSpawn; i++)
+            {
+                var passedGO = runtimeCams[i];
+                GameObject newObj = GameObject.Instantiate(runtimeCams[i]) as GameObject;
+                int camTagNumber = currentCamsInScene + i;
+                newObj.name = baseName +"_"+i.ToString()+ "_" + camTagNumber.ToString(); // Unique name using GUID
+                cameraData.GameObjectNames.Add(newObj.name);
+                
+
+                newObj.tag = baseTag + camTagNumber.ToString(); // Assign the tag
+                newObj.transform.SetParent(newParent.transform);
+                newObj.transform.localPosition = passedGO.transform.position;
+                Camera newCam = newObj.AddComponent<Camera>(); // Add Camera component
+                                                            //update the renderer index
+
+#if UNITY_PIPELINE_URP
+                var camData = newCam.gameObject.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
+                if (camData != null)
+                {
+                    camData.SetRenderer(camIndex);
+                }
+#endif
+                UnityEngine.Object.DestroyImmediate(newObj.GetComponent<AudioListener>()); // Remove the Audio Listener
+            }
+            NumberCamerasInScene += numberToSpawn;
+            //sync EditorPrefs cam data
+            TheCameraSettingsData = JsonUtility.ToJson(cameraData);
+            //select the parent item
+            Selection.activeGameObject = newParent;
+        }
+        public static void GenerateGameObjectRunTime()
+        {
+            if(cameraData == null)
+            {
+                cameraData = new FPRecorderGOCams();
+            }
+        }
+        public static void AddGameObjectCameraData(string objName)
+        {
+            cameraData.GameObjectNames.Add(objName);
+        }
+        /// <summary>
+        /// Drop in GameObjects for cameras
         /// </summary>
         /// <param name="numberToSpawn"></param>
         /// <param name="baseName"></param>
@@ -627,10 +762,11 @@ namespace FuzzPhyte.Recorder.Editor
                 AddNumberTags(numberToSpawn,false);
                 
             }
+        
             GameObject newParent = new GameObject();
             newParent.name = baseName + "_" + numberToSpawn + "_cameraParent";
             newParent.transform.position = new Vector3(0, 0, 0);
-            
+        
             if (cameraData == null)
             {
                 cameraData = new FPRecorderGOCams();
@@ -647,7 +783,7 @@ namespace FuzzPhyte.Recorder.Editor
                 newObj.transform.SetParent(newParent.transform);
                 newObj.transform.localPosition = new Vector3(0, yStartHeight, (i+1)*0.5f);
                 Camera newCam = newObj.AddComponent<Camera>(); // Add Camera component
-                                                               //update the renderer index
+                                                            //update the renderer index
 
 #if UNITY_PIPELINE_URP
                 var camData = newCam.gameObject.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
@@ -664,7 +800,7 @@ namespace FuzzPhyte.Recorder.Editor
             TheCameraSettingsData = JsonUtility.ToJson(cameraData);
             //select the parent item
             Selection.activeGameObject = newParent;
-            //update camera numbers  
+            
         }
         /// <summary>
         /// Generate Recorder Data by Number of Cameras Needed
@@ -678,10 +814,11 @@ namespace FuzzPhyte.Recorder.Editor
                 FPWildCards.SCENE,
                 FPWildCards.RECORDER
             };
-            
+            NullCheckSettingsData();
             for (int i = 0; i < numRecorders; i++)
             {
                 var curTagValue = startTagNum + i;
+                
                 var dataItem = settingsData.CreateImageSequence360PNG(2048, 4096,2048, ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageSource.TaggedCamera, ImageRecorderSettings.EXRCompressionType.Zip, newList, startTag + curTagValue.ToString());
                 dataItem.RecorderName = "FP_360Setup_" + curTagValue.ToString();
                 //update name by one value
@@ -800,6 +937,11 @@ namespace FuzzPhyte.Recorder.Editor
             }
             return anyErrors;
         }
+        public static void RuntimeUpdateSettingsFromPreserve()
+        {
+            var someWindow = (RecorderWindow)EditorWindow.GetWindow(typeof(RecorderWindow));
+            someWindow.SetRecorderControllerSettings(settings);
+        }
         
         //JOHN MENU REMOVED ITEM [MenuItem(CreateAndAdd360RecorderToRecorderSettings, priority = FP_UtilityData.ORDER_SUBMENU_LVL1+6)]
         static protected void CreateAndAddNew360RecorderDataElement()
@@ -887,7 +1029,56 @@ namespace FuzzPhyte.Recorder.Editor
             }
             //need to back up my data
             TheRecorderSettingsJSON = JsonUtility.ToJson(settingsData);
-
+        }
+        /// <summary>
+        /// Runtime Call from the FPRecorderCam
+        /// </summary>
+        public static void RunTimeSaveJSON()
+        {
+            WriteJSONToLocalFile();
+        }
+        public static async void RuntimeWriteRecorderAsset(string userFileName)
+        {
+            var localSamplesFolder = await FP_RecorderUtility.ReturnInstallPath();
+            (bool,string) dataPath=(false,"");
+            try
+            {
+                var potentialFolder = Path.Combine(Application.dataPath, localSamplesFolder);
+                var fileIO = File.Exists(potentialFolder);
+                Debug.Log($"Local Samples Folder: {potentialFolder}, exist? {fileIO}");
+                //check if a folder exists for the data
+                if (!fileIO)
+                {
+                    Directory.CreateDirectory(potentialFolder);
+                }
+              
+                if(File.Exists(Path.Combine(potentialFolder, FP_RecorderUtility.SAMPLELOCALFOLDER)))
+                {
+                    Debug.Log($"Local Samples Folder: {FP_RecorderUtility.SAMPLELOCALFOLDER} exists!");
+                }
+                else
+                {
+                    Directory.CreateDirectory(Path.Combine(potentialFolder, FP_RecorderUtility.SAMPLELOCALFOLDER));
+                }
+                Debug.Log($"Before Assets: {localSamplesFolder}");
+                localSamplesFolder = Path.Combine("Assets", localSamplesFolder);
+                Debug.Log($"After Assets: {localSamplesFolder}");
+                AssetDatabase.Refresh();
+                dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(localSamplesFolder, FP_RecorderUtility.SAMPLELOCALFOLDER);
+                if (!dataPath.Item1)
+                {
+                    Debug.LogError($"Error on Path Creation, check the logs! Path at: {dataPath.Item2}");
+                    return;
+                }
+            }
+            catch(Exception ex)
+            {
+                Debug.LogError($"Error on Creating Asset Folder via FP_Utility_Editor.CreateAssetDatabaseFolder() Message: {ex.Message}");
+            }
+            string currentSceneName = SceneManager.GetActiveScene().name;
+            string backUpRootFile = "/FPBackup_" + userFileName+"_"+currentSceneName+"_"+System.DateTime.Now.ToString("MM_dd_yy_HHmm_s");
+            string assetSettingsFile = backUpRootFile + "_settings.asset";
+            SaveRecorderListFromUnityWindow(dataPath.Item2,assetSettingsFile);
         }
         [MenuItem(WriteBackupJSON, priority = FP_UtilityData.ORDER_SUBMENU_LVL5 + 9)]
         static protected async void WriteJSONToLocalFile()
@@ -968,36 +1159,64 @@ namespace FuzzPhyte.Recorder.Editor
             }
             string assetSettingsFile = backUpRootFile + "_settings.asset";
             SaveRecorderListFromUnityWindow(dataPath.Item2,assetSettingsFile);
-
+            
         }
         public static RecorderControllerSettings GetCurrentRecorderSettings()
-    {
-        // This line attempts to get the currently open Recorder window.
-        // Note: The actual class name might differ and might not be directly accessible without reflection.
-        var recorderWindow = EditorWindow.GetWindow<RecorderWindow>("Unity Recorder", typeof(RecorderWindow));
-
-        if (recorderWindow != null)
         {
-            // Access the RecorderController or its settings here
-            // This part is speculative and depends on the internal implementation of the RecorderWindow
-            // You may need to use reflection to get private fields if they are not publicly exposed
-            var controller = recorderWindow.GetType().GetField("m_RecorderController", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(recorderWindow) as RecorderController;
+            // This line attempts to get the currently open Recorder window.
+            // Note: The actual class name might differ and might not be directly accessible without reflection.
+            var recorderWindow = EditorWindow.GetWindow<RecorderWindow>("Unity Recorder", typeof(RecorderWindow));
 
-            if (controller != null)
+            if (recorderWindow != null)
             {
-                return controller.Settings;
+                // Access the RecorderController or its settings here
+                // This part is speculative and depends on the internal implementation of the RecorderWindow
+                // You may need to use reflection to get private fields if they are not publicly exposed
+                var controller = recorderWindow.GetType().GetField("m_RecorderController", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(recorderWindow) as RecorderController;
+
+                if (controller != null)
+                {
+                    return controller.Settings;
+                }
+            }
+            return null;
+        }
+        public static void ForceSettingsUpdate(RecorderControllerSettings passedSettings)
+        {
+            var runningList = passedSettings.RecorderSettings.ToList();
+            //reset settings
+            settings = null;
+            settings = passedSettings;
+            for(int i=0;i<runningList.Count;i++)
+            {
+                settings.AddRecorderSettings(runningList[i]);
+            }
+            Debug.Log($"Settings now should have: {settings.RecorderSettings.Count()} recorders");
+            //settings.AddRecorderSettings()
+            //settingsData = new FPRecorderSettingsJSON(settings);
+        }
+        public static void LoadRecorderSettings(RecorderControllerSettings loadSettings)
+        {
+            // This line attempts to get the currently open Recorder window.
+            // Note: The actual class name might differ and might not be directly accessible without reflection.
+            var recorderWindow = EditorWindow.GetWindow<RecorderWindow>("Unity Recorder", typeof(RecorderWindow));
+
+            if (recorderWindow != null)
+            {
+                recorderWindow.SetRecorderControllerSettings(loadSettings);
             }
         }
-
-        return null;
-    }
         static protected void SaveRecorderListFromUnityWindow(string path, string fileName)
         {
             string assetPath = AssetDatabase.GenerateUniqueAssetPath(path + fileName);
+            var recorderWindow = EditorWindow.GetWindow<RecorderWindow>("Unity Recorder", typeof(RecorderWindow));
             if(settings != null)
             {
                 RecorderControllerSettingsPreset.SaveAtPath(settings, assetPath);
-
+                if(recorderWindow!= null){
+                    recorderWindow.SaveChanges();
+                    LoadRecorderSettings(settings);
+                }
             }else{
                 Debug.Log($"Settings are null, going to pull from the current recorder window then!");
                 //get settings from the recorder 
@@ -1006,9 +1225,12 @@ namespace FuzzPhyte.Recorder.Editor
                 {
                     Debug.Log($"Saved Settings from the Recorder Window on your behalf at {assetPath}");
                     RecorderControllerSettingsPreset.SaveAtPath(activeSettings, assetPath);
+                    if(recorderWindow!= null){
+                        recorderWindow.SaveChanges();
+                        LoadRecorderSettings(settings);
+                    }
                 }
             }
-           
         }
         [MenuItem(ReadBackupJSON, priority = FP_UtilityData.ORDER_SUBMENU_LVL5 + 8)]
         static protected void ReadJSONFromLocalSelectedFileMenu()
