@@ -26,6 +26,7 @@ namespace FuzzPhyte.Recorder.Editor
         private static int currentCams=0;
         private static int startingCamCount =0;
         private static string userFileName = "Default";
+        private static Color camColor;
         public static FPPreserveObjects Instance
         {
             get
@@ -57,6 +58,18 @@ namespace FuzzPhyte.Recorder.Editor
             }
         }
 #endregion
+        public void ResetPreservedValues()
+        {
+            preservedObjects.Clear();
+            preservedPositions.Clear();
+            currentCams = 0;
+            isSubscribed = false;
+            preservedTags.Clear();
+            preservedTagsIndex.Clear();
+            saveJSONOnFinish=false;
+            startingCamCount=0;
+            userFileName = "Default";
+        }
         private void OnPlayModeStateChanged(PlayModeStateChange state)
         {
             if (state == PlayModeStateChange.ExitingPlayMode)
@@ -67,15 +80,7 @@ namespace FuzzPhyte.Recorder.Editor
             {
                 //preservedObjects.Clear();
                 PreserveObjects(FP_RecorderUtility.BaseCamName,FP_RecorderUtility.CamTAG,currentCams);
-                preservedObjects.Clear();
-                preservedPositions.Clear();
-                currentCams = 0;
-                isSubscribed = false;
-                preservedTags.Clear();
-                preservedTagsIndex.Clear();
-                saveJSONOnFinish=false;
-                startingCamCount=0;
-                userFileName = "Default";
+                ResetPreservedValues();
             }
             
         }
@@ -152,7 +157,11 @@ namespace FuzzPhyte.Recorder.Editor
                 }
                 if(newObj.transform.GetChild(0).gameObject.GetComponent<MeshRenderer>())
                 {
+                    newObj.transform.GetChild(0).gameObject.GetComponent<MeshRenderer>().sharedMaterial.color = camColor;
                     newObj.transform.GetChild(0).gameObject.GetComponent<MeshRenderer>().enabled = false;
+                    
+                    //iconTexture = (Texture2D)EditorGUILayout.ObjectField("Icon Texture", iconTexture, typeof(Texture2D), false);
+                    
                 }
 #if UNITY_PIPELINE_URP
                 var camData = newObj.GetComponent<UnityEngine.Rendering.Universal.UniversalAdditionalCameraData>();
@@ -184,6 +193,7 @@ namespace FuzzPhyte.Recorder.Editor
             //spawn end
             
         }
+       
         /// <summary>
         /// At runtime we can call this method to add the item from our GUI referencing the instance  
         /// </summary>
@@ -208,10 +218,16 @@ namespace FuzzPhyte.Recorder.Editor
             }
         }
 
+        public void UpdateCamColor(Color passedColor)
+        {
+            camColor = passedColor;
+        }
+
         public void UpdateStartingCamCount(int passedCam)
         {
             startingCamCount = passedCam;
         }
+       
         public void UpdateCamerasInScene(int numberCamsInScene)
         {
             currentCams = numberCamsInScene;

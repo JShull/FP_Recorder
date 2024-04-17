@@ -5,12 +5,11 @@ using TMPro;
 using FuzzPhyte.Utility.Editor;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
-using UnityEditor.EditorTools;
-
 #endif
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
+using UnityEngine.Events;
 namespace FuzzPhyte.Recorder
 {
     public class FPRecorderCam : MonoBehaviour
@@ -18,7 +17,7 @@ namespace FuzzPhyte.Recorder
         #region Camera SpawnKeys
         [Header("Save JSON When You Stop?")]
         [Tooltip("This will also backup the Unity Recorder internally - quick fix to me removing the recorder cache constantly")]
-        public bool SaveRecorderAssetOnEnd = true;
+        protected bool SaveRecorderAssetOnEnd = true;
         [Header("Camera Information")]
         public KeyCode SpawnCamKey = KeyCode.C;
         public GameObject CameraPrefab;
@@ -27,11 +26,14 @@ namespace FuzzPhyte.Recorder
         public TextMeshProUGUI CamCount;
         public TextMeshProUGUI Elevation;
         public TextMeshProUGUI UserFileNameRef;
-
         [SerializeField]
         [Tooltip("Placeholder for cameras we generate/spawn at runtime")]
         private List<GameObject> CameraList = new List<GameObject>();
         public int MaxCamerasInScene = 25;
+        [Tooltip("Color when already in the scene")]
+        public Color PlacedColor = Color.blue;
+        [Tooltip("Color during runtime place")]
+        public Color ActivePlacedRuntime = Color.red;
         #endregion
         #region Motion Keys
         [Header("Key Bindings")]
@@ -43,9 +45,11 @@ namespace FuzzPhyte.Recorder
         public KeyCode ElevationUp = KeyCode.E;
         public KeyCode ElevationDown = KeyCode.Q;
         [Space]
+        public UnityEvent OnCamSpawn;
+        [Space]
         [Header("Camera Motion Parameters")]
         #endregion
-#region Camera Speed Parameters
+#region Camera Speed Parameters 
         public float speed = 10.0f; // Speed of camera movement
         public float sensitivity = 0.1f; // Mouse movement sensitivity
         public float elevationSpeed = 2.0f; // Speed of elevation change
@@ -79,6 +83,10 @@ namespace FuzzPhyte.Recorder
                     if(aPotentialCam!=null)
                     {
                         CameraList.Add(aPotentialCam);
+                        if(aPotentialCam.transform.GetChild(0).GetComponent<MeshRenderer>())
+                        {
+                            aPotentialCam.transform.GetChild(0).GetComponent<MeshRenderer>().sharedMaterial.color = PlacedColor;
+                        }
                     }
                 }
             }
@@ -103,9 +111,11 @@ namespace FuzzPhyte.Recorder
             tagManager.ApplyModifiedProperties();
             //update the UI
             CamCount.text = CameraList.Count.ToString();
+            FPPreserveObjects.Instance.UpdateCamColor(PlacedColor);
             UpdateUI();
             //update the Editor Recorder with camera information
         }
+        
         
         public void Update()
         {
@@ -187,10 +197,14 @@ namespace FuzzPhyte.Recorder
                 }
                 return;
             }
+            OnCamSpawn.Invoke();
             Debug.Log($"Tag Count = {tagCountInt}");
             var camTag = FP_RecorderUtility.CamTAG + tagCountInt.ToString();
             //FPMenu.RuntimeAddSingleTag();
             GameObject cam = Instantiate(CameraPrefab, this.transform.position, Quaternion.identity);
+            if(cam.transform.GetChild(0)){
+                cam.transform.GetChild(0).GetComponent<MeshRenderer>().material.color = ActivePlacedRuntime;
+            }
             cam.tag = camTag;
             FPPreserveObjects.Instance.AddObjectForTracking(cam);
             FPPreserveObjects.Instance.AddTagIndex(camTag,tagCountInt);
@@ -213,6 +227,26 @@ namespace FuzzPhyte.Recorder
         private void UpdateUI(){
             CamCount.text = $"C: {CameraList.Count.ToString()} | {MaxCamerasInScene-CameraList.Count} left";
             Elevation.text = $"H: {transform.position.y.ToString("F2")}";
+        }
+        /// <summary>
+        /// This button script will match scene cameras to the recorder - it is a hard reset on the settings data 
+        /// </summary>
+        public void UIButtonMatchSceneCamerasRecorder()
+        {
+            FPMenu.RuntimeResetSettings();
+            //clear preservedObject data
+            FPPreserveObjects.Instance.ResetPreservedValues();
+            FPPreserveObjects.Instance.UpdateCamerasInScene(CameraList.Count);
+            for(int i=0;i<CameraList.Count;i++)
+            {
+                var cam = CameraList[i];
+                var camTag = cam.tag;
+                var tagCountInt = i;
+                FPPreserveObjects.Instance.AddObjectForTracking(cam);
+                FPPreserveObjects.Instance.AddTagIndex(camTag,tagCountInt);
+                FPPreserveObjects.Instance.AddTag(camTag);
+            }
+            UpdateUI();
         }
         #endregion
     }

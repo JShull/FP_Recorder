@@ -1037,6 +1037,28 @@ namespace FuzzPhyte.Recorder.Editor
         {
             WriteJSONToLocalFile();
         }
+        /// <summary>
+        /// Called from the FPRecorderCam When we Hit the Button
+        /// </summary>
+        public static void RuntimeResetSettings()
+        {
+             Debug.LogWarning($"Reset the Settings file in the editorPrefs");
+            //need to generate my settingsData file
+            //single Frame Mode as a generic first one
+            settingsData = new FPRecorderSettingsJSON(RecordMode.SingleFrame, 1, true, -1, true);
+            cameraData = new FPRecorderGOCams();
+            //need to generate a blank 
+            //save the settings as json and store them to my editerprefs
+            TheRecorderSettingsJSON = JsonUtility.ToJson(settingsData);
+            settings = ScriptableObject.CreateInstance<RecorderControllerSettings>();
+            TheCameraSettingsData = JsonUtility.ToJson(cameraData);
+            settings.ExitPlayMode = settingsData.ExitPlayMode;
+            settings.CapFrameRate = settingsData.CapFPS;
+            settings.FrameRate = settingsData.FrameRate;
+            settings.FrameRatePlayback = settingsData.Playback;
+            CacheRecorderControllerSettings();
+            HaveRecorderSettings = true;
+        }
         public static async void RuntimeWriteRecorderAsset(string userFileName)
         {
             var localSamplesFolder = await FP_RecorderUtility.ReturnInstallPath();

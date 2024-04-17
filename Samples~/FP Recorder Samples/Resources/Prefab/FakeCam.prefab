@@ -14,10 +14,10 @@ GameObject:
   - component: {fileID: 7313881819649474647}
   - component: {fileID: 2298297898122072082}
   - component: {fileID: 6889869341301145381}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: FakeCam
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: 2800000, guid: a10f51043d3bb43f4a4c9ffc030b1365, type: 3}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -147,7 +147,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 51
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -214,7 +214,7 @@ GameObject:
   - component: {fileID: 5860579939376506889}
   - component: {fileID: 6798281158118721817}
   - component: {fileID: 8664205362032778244}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
