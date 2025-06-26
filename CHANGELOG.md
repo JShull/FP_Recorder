@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-06-26
+
+### 0.3.0 Changed
+
+- [@JShull](https://github.com/jshull).
+  - Updated Scripts to match changes in Unity.Recorder version 5.1.2
+    - FPMenu.cs
+    - FPRecorderSettingsJSON.cs
+    - ImageSeqRecorder.cs
+
 ## [0.1.0] - 2024-02-29
 
 ### 0.1.0 Added

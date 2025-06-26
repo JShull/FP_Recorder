@@ -337,7 +337,7 @@ namespace FuzzPhyte.Recorder.Editor
         /// <param name="renderStereo"></param>
         /// <param name="flip"></param>
         /// <returns></returns>
-        public FPRecorderDataStruct CreateImageSequence360PNG(int height, int width, int mapsize, ImageRecorderSettings.ImageRecorderOutputFormat imgFormat, ImageSource imgSource,ImageRecorderSettings.EXRCompressionType compType, List<FPWildCards> wCards, string camTag = "MainCamera", bool renderStereo = false, bool flip = false)
+        public FPRecorderDataStruct CreateImageSequence360PNG(int height, int width, int mapsize, ImageRecorderSettings.ImageRecorderOutputFormat imgFormat, ImageSource imgSource,CompressionUtility.EXRCompressionType compType, List<FPWildCards> wCards, string camTag = "MainCamera", bool renderStereo = false, bool flip = false)
         {
             var newDataStruct = new FPRecorderDataStruct();
             //set our classifiers

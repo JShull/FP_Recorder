@@ -468,7 +468,7 @@ namespace FuzzPhyte.Recorder.Editor
         {
             var dataPath = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT3);
             string assetPath = AssetDatabase.GenerateUniqueAssetPath(dataPath.Item2 + "/OutputFormatImgSequence.asset");
-            var asset = ImageSeqRecorder.CreateInstance( ImageRecorderSettings.ImageRecorderOutputFormat.PNG , ImageRecorderSettings.EXRCompressionType.Zip, 100);
+            var asset = ImageSeqRecorder.CreateInstance( ImageRecorderSettings.ImageRecorderOutputFormat.PNG , CompressionUtility.EXRCompressionType.Zip, 100);
             CreateAssetAt(asset, assetPath);
         }
         //JOHN MENU REMOVED ITEM [MenuItem(ImageSeqOutput, true)]
@@ -556,13 +556,13 @@ namespace FuzzPhyte.Recorder.Editor
             inputSettings.CameraTag = camTag;
             //output format
             outputFormat.OutputFormat = ImageRecorderSettings.ImageRecorderOutputFormat.PNG;
-            outputFormat.EXRCompression = ImageRecorderSettings.EXRCompressionType.Zip;
+            outputFormat.EXRCompression = CompressionUtility.EXRCompressionType.Zip;
             //output file & set files to the 
             var blankImageRecorder = ScriptableObject.CreateInstance<ImageRecorderSettings>();
             blankImageRecorder.imageInputSettings = inputSettings;
             blankImageRecorder.OutputFile = CreateOutputFileFromWildCards(newList).FileName;
             blankImageRecorder.OutputFormat = ImageRecorderSettings.ImageRecorderOutputFormat.PNG;;
-            blankImageRecorder.EXRCompression = ImageRecorderSettings.EXRCompressionType.Zip;
+            blankImageRecorder.EXRCompression = CompressionUtility.EXRCompressionType.Zip;
             blankImageRecorder.JpegQuality = 100;
             blankImageRecorder.name = "FP_360Setup_" +tagNumber;
             settings.AddRecorderSettings(blankImageRecorder);
@@ -819,7 +819,7 @@ namespace FuzzPhyte.Recorder.Editor
             {
                 var curTagValue = startTagNum + i;
                 
-                var dataItem = settingsData.CreateImageSequence360PNG(2048, 4096,2048, ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageSource.TaggedCamera, ImageRecorderSettings.EXRCompressionType.Zip, newList, startTag + curTagValue.ToString());
+                var dataItem = settingsData.CreateImageSequence360PNG(2048, 4096,2048, ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageSource.TaggedCamera, CompressionUtility.EXRCompressionType.Zip, newList, startTag + curTagValue.ToString());
                 dataItem.RecorderName = "FP_360Setup_" + curTagValue.ToString();
                 //update name by one value
                 settingsData.RecorderData.Add(dataItem);
@@ -955,7 +955,7 @@ namespace FuzzPhyte.Recorder.Editor
                     FPWildCards.RECORDER
                 };
 
-                var dataItem = settingsData.CreateImageSequence360PNG(2048, 4096,2048, ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageSource.TaggedCamera,ImageRecorderSettings.EXRCompressionType.Zip, newList, FP_RecorderUtility.CamTAG);
+                var dataItem = settingsData.CreateImageSequence360PNG(2048, 4096,2048, ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageSource.TaggedCamera,CompressionUtility.EXRCompressionType.Zip, newList, FP_RecorderUtility.CamTAG);
                 dataItem.RecorderName = "FP_360Setup" + "_"+(settingsData.RecorderData.Count+1).ToString();
                 //update name by one value
                 
@@ -1410,7 +1410,7 @@ namespace FuzzPhyte.Recorder.Editor
             var outputAsset = FP_Utility_Editor.CreateAssetDatabaseFolder(FP_RecorderUtility.ReturnSamplesPath(), FP_RecorderUtility.CAT3);
             string imgSeqOutputAssetPath = AssetDatabase.GenerateUniqueAssetPath(outputAsset.Item2 + "/OutputFormatImgSequence.asset");
 
-            var imgSeqAsset = ImageSeqRecorder.CreateInstance( ImageRecorderSettings.ImageRecorderOutputFormat.PNG, ImageRecorderSettings.EXRCompressionType.Zip, 100);
+            var imgSeqAsset = ImageSeqRecorder.CreateInstance( ImageRecorderSettings.ImageRecorderOutputFormat.PNG, CompressionUtility.EXRCompressionType.Zip, 100);
             CreateAssetAt(imgSeqAsset, imgSeqOutputAssetPath);
             recorderAsset.OutputFormatData = imgSeqAsset;
 

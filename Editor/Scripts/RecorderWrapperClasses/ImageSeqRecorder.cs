@@ -12,11 +12,11 @@ namespace FuzzPhyte.Recorder.Editor
     public class ImageSeqRecorder : FP_OutputFormatSO
     {
         public ImageRecorderSettings.ImageRecorderOutputFormat MediaFileFormat = ImageRecorderSettings.ImageRecorderOutputFormat.PNG;
-        public ImageRecorderSettings.EXRCompressionType Compression = ImageRecorderSettings.EXRCompressionType.Zip;
+        public CompressionUtility.EXRCompressionType Compression = CompressionUtility.EXRCompressionType.Zip;
         [Range(1,100)]
         public int Quality;
 
-        public void Init(ImageRecorderSettings.ImageRecorderOutputFormat formatMedia,ImageRecorderSettings.EXRCompressionType compression, int qty)
+        public void Init(ImageRecorderSettings.ImageRecorderOutputFormat formatMedia,CompressionUtility.EXRCompressionType compression, int qty)
         {
             this.MediaFileFormat = formatMedia;
             this.Compression = compression;
@@ -24,7 +24,7 @@ namespace FuzzPhyte.Recorder.Editor
             this.EncoderType = FPEncoderType.ImageEncoder;
         }
 
-        public static ImageSeqRecorder CreateInstance(ImageRecorderSettings.ImageRecorderOutputFormat format, ImageRecorderSettings.EXRCompressionType comp, int quant)
+        public static ImageSeqRecorder CreateInstance(ImageRecorderSettings.ImageRecorderOutputFormat format, CompressionUtility.EXRCompressionType comp, int quant)
         {
             var data = ScriptableObject.CreateInstance<ImageSeqRecorder>();
             data.Init(format,comp,quant);
