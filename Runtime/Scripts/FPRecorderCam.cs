@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using UnityEngine;
 #if UNITY_EDITOR
 using FuzzPhyte.Recorder.Editor;
+using FuzzPhyte.Utility.Editor;
 #endif
 using TMPro;
-using FuzzPhyte.Utility.Editor;
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
 #endif
