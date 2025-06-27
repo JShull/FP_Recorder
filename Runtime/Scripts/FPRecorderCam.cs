@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_EDITOR
 using FuzzPhyte.Recorder.Editor;
+#endif
 using TMPro;
 using FuzzPhyte.Utility.Editor;
 #if ENABLE_INPUT_SYSTEM
@@ -58,32 +60,34 @@ namespace FuzzPhyte.Recorder
         private float yaw = 0.0f; // Yaw to store the angle in the horizontal plane
         private float pitch = 0.0f; // Pitch to store the angle in the vertical plane
         private int startingCamCount;
-#endregion
-#region Unity Functions
+        #endregion
+        #region Unity Functions
         public void Start()
         {
+#if UNITY_EDITOR
             //go and check for cameras that have tags already in scene and update the list
-            for(int i=0;i<MaxCamerasInScene;i++)
+            for (int i = 0; i < MaxCamerasInScene; i++)
             {
                 var tagToFind = FP_RecorderUtility.CamTAG + (i).ToString();
                 //check if it exists
-                if(FPGenerateTag.DoesTagExist(tagToFind))
+                if (FPGenerateTag.DoesTagExist(tagToFind))
                 {
                     var aPotentialCam = GameObject.FindGameObjectWithTag(tagToFind);
-                    if(aPotentialCam!=null)
+                    if (aPotentialCam != null)
                     {
                         CameraList.Add(aPotentialCam);
                     }
-                }else
+                }
+                else
                 {
                     //Debug.LogWarning($"Missing the tag: {FP_RecorderUtility.CamTAG + (i+1).ToString()}, did you need to add them?");
                     FPGenerateTag.CreateTag(tagToFind);
                     Debug.Log($"Created a tag: {tagToFind}");
                     var aPotentialCam = GameObject.FindGameObjectWithTag(tagToFind);
-                    if(aPotentialCam!=null)
+                    if (aPotentialCam != null)
                     {
                         CameraList.Add(aPotentialCam);
-                        if(aPotentialCam.transform.GetChild(0).GetComponent<MeshRenderer>())
+                        if (aPotentialCam.transform.GetChild(0).GetComponent<MeshRenderer>())
                         {
                             aPotentialCam.transform.GetChild(0).GetComponent<MeshRenderer>().sharedMaterial.color = PlacedColor;
                         }
@@ -91,13 +95,13 @@ namespace FuzzPhyte.Recorder
                 }
             }
             //turn on mesh renderers if we have them and turn off the camera component
-            foreach(var cam in CameraList)
+            foreach (var cam in CameraList)
             {
-                if(cam.GetComponent<Camera>())
+                if (cam.GetComponent<Camera>())
                 {
                     cam.GetComponent<Camera>().enabled = false;
                 }
-                if(cam.transform.GetChild(0).GetComponent<MeshRenderer>())
+                if (cam.transform.GetChild(0).GetComponent<MeshRenderer>())
                 {
                     cam.transform.GetChild(0).GetComponent<MeshRenderer>().enabled = true;
                 }
@@ -114,11 +118,13 @@ namespace FuzzPhyte.Recorder
             FPPreserveObjects.Instance.UpdateCamColor(PlacedColor);
             UpdateUI();
             //update the Editor Recorder with camera information
+#endif
         }
         
         
         public void Update()
         {
+            #if UNITY_EDITOR
             MoveCam();
             if(Input.GetKeyDown(SpawnCamKey)){
                 SpawnCam();
@@ -126,12 +132,13 @@ namespace FuzzPhyte.Recorder
             
             //round to two decimals
             UpdateUI();
-            
+            #endif
         }
         #endregion
         #region Camera Functions
         void MoveCam()
         {
+#if UNITY_EDITOR
             // Mouse movement for rotation
             // if using new input system
 #if ENABLE_INPUT_SYSTEM
@@ -147,22 +154,22 @@ namespace FuzzPhyte.Recorder
 
             // Movement vector based on input and camera orientation, ignoring y to maintain elevation
             float zMove = 0;
-            float xMove =0;
-            if(Input.GetKey(ForwardMotion))
+            float xMove = 0;
+            if (Input.GetKey(ForwardMotion))
             {
-                zMove=1;
+                zMove = 1;
             }
-            if(Input.GetKey(BackwardMotion))
+            if (Input.GetKey(BackwardMotion))
             {
-                zMove=-1;
+                zMove = -1;
             }
-            if(Input.GetKey(RightMotion))
+            if (Input.GetKey(RightMotion))
             {
-                xMove=1;
+                xMove = 1;
             }
-            if(Input.GetKey(LeftMotion))
+            if (Input.GetKey(LeftMotion))
             {
-                xMove=-1;
+                xMove = -1;
             }
             Vector3 move = new Vector3(xMove, 0, zMove);
             move = transform.TransformDirection(move);
@@ -179,16 +186,19 @@ namespace FuzzPhyte.Recorder
             {
                 transform.position += Vector3.down * elevationSpeed;
             }
+            #endif
         }
         void SpawnCam()
         {
-            if(!passedParent){
+#if UNITY_EDITOR
+            if (!passedParent)
+            {
                 passedParent = true;
                 //FPPreserveObjects.Instance.AddParentItem(ParentItem);
                 FPPreserveObjects.Instance.UpdateCamerasInScene(CameraList.Count);
             }
             int tagCountInt = CameraList.Count;
-            if(MaxCamerasInScene<=tagCountInt)
+            if (MaxCamerasInScene <= tagCountInt)
             {
                 Debug.LogWarning("Max Cameras in Scene Reached - make sure to increase the value before you add more cameras - then replay this after you do that! (going to force a stop on playtime)");
                 if (EditorApplication.isPlaying)
@@ -202,27 +212,33 @@ namespace FuzzPhyte.Recorder
             var camTag = FP_RecorderUtility.CamTAG + tagCountInt.ToString();
             //FPMenu.RuntimeAddSingleTag();
             GameObject cam = Instantiate(CameraPrefab, this.transform.position, Quaternion.identity);
-            if(cam.transform.GetChild(0)){
+            if (cam.transform.GetChild(0)) {
                 cam.transform.GetChild(0).GetComponent<MeshRenderer>().material.color = ActivePlacedRuntime;
             }
             cam.tag = camTag;
             FPPreserveObjects.Instance.AddObjectForTracking(cam);
-            FPPreserveObjects.Instance.AddTagIndex(camTag,tagCountInt);
+            FPPreserveObjects.Instance.AddTagIndex(camTag, tagCountInt);
             FPPreserveObjects.Instance.AddTag(camTag);
             CameraList.Add(cam);
             UpdateUI();
+#endif
             //FPMenu.RunTimeAddCamera(tagCountInt);
         }
         #endregion
         #region UI Updates
+
         public void UIInputChanged()
         {
+#if UNITY_EDITOR
             FPPreserveObjects.Instance.UpdateUserFileName(UserFileNameRef.text);
+            #endif
         }
         public void UIToggleChange()
         {
             SaveRecorderAssetOnEnd = !SaveRecorderAssetOnEnd;
+#if UNITY_EDITOR
             FPPreserveObjects.Instance.SaveJSONUpdate(SaveRecorderAssetOnEnd);
+            #endif
         }
         private void UpdateUI(){
             CamCount.text = $"C: {CameraList.Count.ToString()} | {MaxCamerasInScene-CameraList.Count} left";
@@ -233,20 +249,22 @@ namespace FuzzPhyte.Recorder
         /// </summary>
         public void UIButtonMatchSceneCamerasRecorder()
         {
+#if UNITY_EDITOR
             FPMenu.RuntimeResetSettings();
             //clear preservedObject data
             FPPreserveObjects.Instance.ResetPreservedValues();
             FPPreserveObjects.Instance.UpdateCamerasInScene(CameraList.Count);
-            for(int i=0;i<CameraList.Count;i++)
+            for (int i = 0; i < CameraList.Count; i++)
             {
                 var cam = CameraList[i];
                 var camTag = cam.tag;
                 var tagCountInt = i;
                 FPPreserveObjects.Instance.AddObjectForTracking(cam);
-                FPPreserveObjects.Instance.AddTagIndex(camTag,tagCountInt);
+                FPPreserveObjects.Instance.AddTagIndex(camTag, tagCountInt);
                 FPPreserveObjects.Instance.AddTag(camTag);
             }
             UpdateUI();
+            #endif
         }
         #endregion
     }
